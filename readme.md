@@ -4,7 +4,7 @@
 
 Use Symja online
 
-* (Symja Appengine web interface)[http://symjaweb.appspot.com/]
+* [Symja Appengine web interface](http://symjaweb.appspot.com/)  
 
 Related links:
 
