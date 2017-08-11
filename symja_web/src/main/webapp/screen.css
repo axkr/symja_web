@@ -1,0 +1,6 @@
+body { margin:0; padding:0; border:0; display: block; }
+table { cellpadding:0; cellspacing:0; width:100%; } 
+form {  width:640px; } 
+pre { min-height: 32px; overflow: auto; overflow: scroll -moz-scrollbars-horizontal; }
+#result   { background-color:lightgrey; width:640px; }
+
