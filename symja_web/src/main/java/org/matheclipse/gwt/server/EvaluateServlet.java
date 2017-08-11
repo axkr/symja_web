@@ -39,11 +39,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 public class EvaluateServlet extends HttpServlet {
 	private static final long serialVersionUID = 6265703737413093134L;
 
-	private static final Logger log = Logger.getLogger(EvaluateServlet.class.getName());
-
-	public static boolean INITIALIZED = false;
-
-	// private static final boolean UNIT_TEST = false;
+	static final Logger log = Logger.getLogger(EvaluateServlet.class.getName());
 
 	private static final boolean DEBUG = true;
 
@@ -451,8 +447,8 @@ public class EvaluateServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		if (!INITIALIZED) {
-			initialization();
+		if (!AJAXQueryServlet.INITIALIZED) {
+			AJAXQueryServlet.initialization();
 		}
 		// if (USE_MEMCACHE) {
 		// if (cache == null) {
@@ -469,34 +465,6 @@ public class EvaluateServlet extends HttpServlet {
 
 		// Queue queue = QueueFactory.getDefaultQueue();
 		// queue.add(url("/worker").param("key", key));
-	}
-
-	public synchronized static void initialization() {
-		INITIALIZED = true;
-		Config.JAS_NO_THREADS = true;
-		// Config.LOAD_SERIALIZED_RULES = true;
-		F.initSymbols(null, new SymbolObserver(), false);
-		// Integrate.initSerializedRules(F.Integrate);
-
-		// TODO optimize - the following initialization is very slow
-//		final EvalEngine engine = EvalEngine.get();
-//		IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-//		if (ruleList != null) {
-//			engine.addRules(ruleList);
-//		}
-//		ruleList = org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
-//		if (ruleList != null) {
-//			engine.addRules(ruleList);
-//		}
-//		Config.SERVER_MODE = true;
-//		F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
-		EvalEngine.get().setPackageMode(true);
-		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
-//		F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
-		EvalEngine.get().setPackageMode(false);
-		log.info("EvaluateServlet-Integrate initialized");
-
 	}
 
 	// public static void createJavaView(Writer buffer, String graphicData)

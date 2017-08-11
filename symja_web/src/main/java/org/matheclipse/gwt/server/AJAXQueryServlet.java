@@ -60,6 +60,8 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	public static final String EVAL_ENGINE = EvalEngine.class.getName();
 
+	public static boolean INITIALIZED = false;
+
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		doPost(req, res);
 	}
@@ -139,15 +141,12 @@ public class AJAXQueryServlet extends HttpServlet {
 
 		try {
 			String[] result = evaluateString(request, engine, expression, numericMode, function);
-			// if (!saveModifiedUserSymbols(engine)) {
-			// return createJSONErrorString(
-			// "Number of user '$'-symbols\ngreater than " + MAX_NUMBER_OF_VARS + " or \nformula to big!");
-			// }
 			outWriter.append(result[1]);
 			return outWriter.toString();
 		} finally {
 			if (session != null) {
-				session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME, engine.getContextPath().getGlobalContext());
+				session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME,
+						engine.getContextPath().getGlobalContext());
 			}
 
 			// tear down associated ThreadLocal from EvalEngine
@@ -573,48 +572,25 @@ public class AJAXQueryServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		if (!EvaluateServlet.INITIALIZED) {
-			EvaluateServlet.initialization();
-		}
-
-		// if (USE_MEMCACHE) {
-		// if (cache == null) {
-		// try {
-		// CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
-		// cache = cacheFactory.createCache(Collections.emptyMap());
-		// } catch (Exception e) {
-		// if (Config.SHOW_STACKTRACE) {
-		// e.printStackTrace();
-		// }
-		// }
-		// }
-		// }
-
-		// Queue queue = QueueFactory.getDefaultQueue();
-		// queue.add(url("/worker").param("key", key));
-		// F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-		// F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+		if (!INITIALIZED) {
+			AJAXQueryServlet.initialization();
+		} 
 	}
 
-	// public static void createJavaView(Writer buffer, String graphicData)
-	// throws
-	// IOException {
-	// buffer.write("<applet name=\"jvLite\" code=\"jvLite.class\" "
-	// +
-	// // jamwiki path
-	// "codebase=\"../static/lib\" "
-	// +
-	//
-	// // standalone path
-	// // "codebase=\"lib\" " +
-	// "width=\"720\" height=\"400\" " + "alt=\"JavaView lite applet\" " +
-	// "archive=\"jvLite.jar\" id=\"applet" + APPLET_NUMBER
-	// + "\">\n" + "<param name=\"Axes\" value=\"show\" />\n" +
-	// "<param name=\"mathematica\" value=\"");
-	// // System.out.println(graphicData);
-	// // writer.write(replace(graphicData));
-	// buffer.write(graphicData);
-	// buffer.write("\" /></applet>");
-	// APPLET_NUMBER++;
-	// }
+	public synchronized static void initialization() {
+		AJAXQueryServlet.INITIALIZED = true;
+		Config.JAS_NO_THREADS = true;
+		// Config.LOAD_SERIALIZED_RULES = true;
+		F.initSymbols(null, new SymbolObserver(), false);
+		// Integrate.initSerializedRules(F.Integrate);
+
+		// F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+		EvalEngine.get().setPackageMode(true);
+		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
+		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
+		EvalEngine.get().setPackageMode(false);
+		EvaluateServlet.log.info("EvaluateServlet-Integrate initialized");
+
+	}
 }
