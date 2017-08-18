@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.matheclipse.core.eval.EvalEngine;
 
 public class AJAXDocServlet extends HttpServlet {
@@ -44,18 +47,23 @@ public class AJAXDocServlet extends HttpServlet {
 		res.setCharacterEncoding("UTF-8");
 		res.setHeader("Cache-Control", "no-cache");
 		PrintWriter out = res.getWriter();
-		try { 
-		} catch (Exception e) {
-			String msg = e.getMessage();
-			// if (msg != null) {
-			// out.println(createJSONErrorString("Exception: " + msg));
-			// return;
-			// }
-			// out.println(createJSONErrorString("Exception: " + e.getClass().getSimpleName()));
-			return;
+		try {
+			String name = "query";
+			String value = req.getParameter(name);
+			if (value == null) {
+				out.println(createJSONDocString("No input expression posted!"));
+				return;
+			}
+			out.println(createJSONDocString("Test content"));
+		} catch (Exception e) { 
 		}
 	}
 
- 
+	private static String createJSONDocString(String str) {
+		JSONArray temp;
+		JSONObject outJSON = new JSONObject();
+		outJSON.put("content", "<div id=\"docContent\">" + str + "</div>");
+		return JSONValue.toJSONString(outJSON);
+	}
 
 }

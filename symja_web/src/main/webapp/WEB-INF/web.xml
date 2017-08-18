@@ -22,6 +22,10 @@
 		<servlet-class>org.matheclipse.gwt.server.AJAXDocServlet</servlet-class>
   </servlet>
   <servlet>
+		<servlet-name>search</servlet-name> 
+		<servlet-class>org.matheclipse.gwt.server.AJAXSearchServlet</servlet-class>
+  </servlet>
+  <servlet>
 		<servlet-name>admin</servlet-name>
 		<servlet-class>org.matheclipse.gwt.server.AdminServlet</servlet-class>
   </servlet>  
@@ -40,6 +44,10 @@
   <servlet-mapping>
 	<servlet-name>doc</servlet-name>
 	<url-pattern>/ajax/doc/</url-pattern>
+  </servlet-mapping>
+    <servlet-mapping>
+	<servlet-name>search</servlet-name>
+	<url-pattern>/ajax/doc/search/</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
