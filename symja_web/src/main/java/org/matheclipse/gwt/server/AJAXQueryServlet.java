@@ -22,6 +22,7 @@ import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.F;
@@ -129,14 +130,22 @@ public class AJAXQueryServlet extends HttpServlet {
 		PrintStream outs = new PrintStream(wouts);
 		EvalEngine engine = null;
 		if (session != null) {
+			LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
 			org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
 					.getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
 			engine = new EvalEngine(session.getId(), 256, 256, outs, false);
 			if (context != null) {
 				engine.getContextPath().setGlobalContext(context);
 			}
+			if (lch != null) {
+				engine.setOutListDisabled(lch);
+			} else {
+				engine.setOutListDisabled(false, 100);
+			}
 		} else {
+			// isn't used
 			engine = new EvalEngine("no-session", 256, 256, outs, false);
+			engine.setOutListDisabled(false, 100);
 		}
 
 		try {
@@ -145,6 +154,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			return outWriter.toString();
 		} finally {
 			if (session != null) {
+				session.setAttribute("LastCalculationsHistory", engine.getOutList());
 				session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME,
 						engine.getContextPath().getGlobalContext());
 			}
@@ -257,6 +267,7 @@ public class AJAXQueryServlet extends HttpServlet {
 				// putToMemcache(inExpr, outExpr);
 				// }
 				// }
+				EvalEngine.get().addOut(outExpr);
 				if (outExpr != null) {
 					if (outExpr.isAST(F.Graphics) || outExpr.isAST(F.Graphics3D)) {
 						outExpr = F.Show(outExpr);
@@ -574,7 +585,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		super.init();
 		if (!INITIALIZED) {
 			AJAXQueryServlet.initialization();
-		} 
+		}
 	}
 
 	public synchronized static void initialization() {
