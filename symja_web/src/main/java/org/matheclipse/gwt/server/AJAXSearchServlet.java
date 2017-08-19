@@ -78,7 +78,7 @@ public class AJAXSearchServlet extends HttpServlet {
 				htmlBuf.append("\n</div>");
 				out.println(createJSONDocString(htmlBuf.toString()));
 			} else {
-				out.println(createJSONDocString("No document found!"));
+				out.println(createJSONDocString("<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>."));
 			}
 			return;
 		} catch (Exception e) {
