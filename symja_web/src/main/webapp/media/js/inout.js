@@ -205,20 +205,21 @@ function loadLink() {
 
 function showGallery() {
 	setQueries([
-	  '1 + 2 - x * 3 x / y',
-	  'Sin[Pi]',
-	  'Plot[{Sin[x], Cos[x], Tan[x]}, {x, -3Pi, 3Pi}]',
-	  'Plot3D[Exp[x] Cos[y], {x, -2, 1}, {y, -Pi, 2 Pi}]',
-	  'translate[graphics_, {dx_,dy_,dz_}] := graphics /. Sphere[{x_,y_,z_}, r_] -> Sphere[{x+dx, y+dy, z+dz}, r]',
-	  'sierpinski[block_, size_] := translate[block, #*size*2]& /@ {{0,0,.6124}, {-.2886,-.5,-.204}, {-.2886,.5,-.204}, {.5774,0,-.204}}',
-	  'Graphics3D[{Yellow, First[Nest[{sierpinski[First[#], Last[#]], Last[#]*2}&, {Sphere[{0,0,0}, 1], 1}, 3]]}]',
-	  'N[E, 30]',
-	  'D[Sin[2x] + Log[x] ^ 2, x]',
-	  'Integrate[Tan[x] ^ 5, x]',
-	  'A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}; MatrixForm[A]',
-	  'LinearSolve[A, {1, 1, 1}] // MatrixForm',
-	  'Eigenvalues[A]',
-	  '# ^ 2 & /@ Range[10]',
-	  'Graphics[Table[{EdgeForm[{GrayLevel[0, 0.5]}], Hue[(-11+q+10r)/72, 1, 1, 0.6], Disk[(8-r){Cos[2Pi q/12], Sin [2Pi q/12]}, (8-r)/3]}, {r, 6}, {q, 12}]]'
+	  '1 + 2 - x*3*x / y',
+	  'Sin(Pi)',
+	  'Cos(30*Degree)',
+	  'Plot({Sin(x), Cos(x), Tan(x)}, {x, -3*Pi, 3*Pi})',  
+	  'N(E, 30)',
+	  'D(Sin(2*x) + Log(x) ^ 2, x)',
+	  'Integrate(Tan(x) ^ 5, x)',
+	  'Solve({x^2-11==y, x+y==-9}, {x,y})',
+	  'Factor(-1+x^16)',
+	  'Expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))',
+	  'FactorInteger(2^15-5)',
+	  'Refine(Abs(n*Abs(m)), n<0)',
+	  'A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}; MatrixForm(A)',
+	  'LinearSolve(A, {1, 1, 1}) // MatrixForm',
+	  'Eigenvalues(A)',
+	  '# ^ 2 & /@ Range(10)'
 	]);
 }

@@ -23,6 +23,19 @@
 <link rel="stylesheet" type="text/css" href="/media/css/documentation.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/message.css" />
 <link rel="stylesheet" type="text/css" media="print" href="/media/css/styles_print.css" />
+
+<link rel="stylesheet" type="text/css" href="/media/css/font-awesome.min.css" />
+
+<!-- Favicons -->
+<link rel="apple-touch-icon" sizes="180x180" href="/media/img/favicons/apple-touch-icon.png" />
+<link rel="icon" type="image/png" href="/media/img/favicons/favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/media/img/favicons/favicon-16x16.png" sizes="16x16" />
+<link rel="manifest" href="/media/img/favicons/manifest.json" />
+<link rel="mask-icon" href="/media/img/favicons/safari-pinned-tab.svg" color="#333333" />
+<link rel="shortcut icon" href="/media/img/favicons/favicon.ico" />
+<meta name="msapplication-config" content="/media/img/favicons/browserconfig.xml" />
+<meta name="theme-color" content="#ffffff" />
+
 <!--[if lte IE 9]>
 <link rel="stylesheet" type="text/css" href="/media/css/styles_ie.css" />
 <![endif]-->
@@ -43,8 +56,8 @@
 <script type="text/javascript" src="/media/js/graphics3d.js"></script>
 <script type="text/javascript" src="/media/js/doc.js"></script>
 
- 
-<!-- including scriptaculous main does not work in Safari --> 
+
+<!-- including scriptaculous main does not work in Safari -->
 <script type="text/javascript" src="/media/js/scriptaculous/builder.js"></script>
 <script type="text/javascript" src="/media/js/scriptaculous/effects.js"></script>
 <script type="text/javascript" src="/media/js/scriptaculous/dragdrop.js"></script>
@@ -52,57 +65,50 @@
 <script type="text/javascript" src="/media/js/scriptaculous/slider.js"></script>
 <script type="text/javascript" src="/media/js/scriptaculous/sound.js"></script>
 <!--<script type="text/javascript" src="/media/js/scriptaculous/scriptaculous.js"></script>-->
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-64441388-1', 'auto');
+ga('send', 'pageview');
+</script>
 
 
 </head>
 
 <body>
+
+<header>
+<div id="headerleft"> 
+ <!--  <img id="logo" class="load" src="/media/img/logo-heptatom.svg" height="32" alt="Logo" />
+  <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" />
+  <div class="menu">
+    <a href="javascript:showOpen()" title="Open"><i class="fa fa-file-text"></i></a>
+    <a href="javascript:showSave()" title="Save"><i class="fa fa-download"></i></a>
+    <a href="javascript:createLink()" title="Generate hash"><i class="fa fa-share-alt"></i></a>
+   </div>
+    -->
+</div>
+
+<div id="headerright">
+  <input id="search" type="text" /><a id="doclink" href="javascript:toggleDoc()" title="Docs"><i class="fa fa-lg fa-question-circle-o"></i></a>
+
+ <!-- 
+  <div id="notAuthenticated" class="login">
+    <a href="javascript:showLogin()" class="fa fa-lg fa-sign-in" title="Sign in"></a>
+  </div>
   
-
-
-<div id="head">
-	<div class="headright">
-		<a href="javascript:createLink()">#</a>
-	</div>
-	<div class="headright">
-<%
-	UserService userService = UserServiceFactory.getUserService();
-	if (userService.getCurrentUser() != null) {
-		User user = userService.getCurrentUser();
-		if (user != null) {
-%>
-		  <div id="authenticated">
-			<span id="username"><%=request.getUserPrincipal().getName()%></span><br />
-			<a href="<%=userService.createLogoutURL(request.getRequestURI())%>">Logout</a><br />
-		  </div>
-<%
-        }
-	} else {
-%>
-		  <div id="notAuthenticated">
-			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your '$'-user variables in the datastore">Login</a><br />
-		  </div>
-<%
-	}
-%>
-	</div>
-	
-	<span id="logo"><a href="http://symjaweb.appspot.com" target="_blank" style="font-family:'Times New Roman',Times,serif; font-size:150%">Symja</a></span>
+  <div id="authenticated" class="login" style="display: none">
+    <span id="username"></span><a id="logout" href="javascript:logout()" class="fa fa-lg fa-sign-out" title="Sign out"></a>
+  </div>
+  -->
 </div>
+</header> 
 
-<div id="menu">
-<div id="menuleft">
-    <span><a href="javascript:showSave()">Save</a></span><span><a href="javascript:showOpen()">Load</a></span>
-    <span style="color:red">This is a prototype interface NOT all menus are working</span>
-</div>
-<div id="menuright">
-	<a id="doclink" href="javascript:toggleDoc()">Documentation</a>
-	<input id="search" type="text" />
-</div>
-</div>
-
+<!-- Login -->
 <script type="text/javascript">
-    var REQUIRE_LOGIN = true;
+  var REQUIRE_LOGIN = true;
 </script>
 
 
@@ -114,16 +120,20 @@
 <!-- Insert ul into this div, as empty ul is not allowed! -->
 <div id="queriesContainer"></div>
 
-<div id="welcomeContainer">
+<div id="welcomeContainer">  
 <div id="welcome">
-<p><strong>Welcome to Symja!</strong></p>
+<p><h1>Welcome to Symja!</h1></p>
 <p>Symja is a general-purpose computer algebra system.</p>
-<p>Enter queries and submit them by pressing <code>Shift</code> + <code>Return</code>.
-See the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.
+<p>Enter queries and evaluate them by pressing <code>Shift</code> + <code>Return</code>.
+See the <a href="javascript:showGallery()">gallery</a> for some examples or the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.
 <!--<p>Currently, only <a href="http://www.getfirefox.com" target="_blank">Firefox</a> is supported. Install the <a href="http://www.mozilla.org/projects/mathml/fonts/" target="_blank">STIX fonts</a> for optimal display of mathematical content.</p>-->
 <!--<p><small>This box will disappear as soon as you submit your first query.</small></p>-->
-Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.</p>
-<p>Visit <a href="http://bitbucket.org/axelclk/symja_android_library/wiki/Home" target="_blank">Symja project page</a> for further information about the project.</p>
+</p>
+<p>Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.
+For further information about the project visit <a href="https://github.com/axkr/symja_web" target="_blank">the github.com page</a>.</p>
+<div style="position:absolute;right:0;bottom:-2.8em;">
+  <p style="text-align:right;color:#3f3f3f;"><label><input type="checkbox" id="hideStartupMsg" />Do not show on startup.</label></p>
+</div>
 </div>
 
 <div id="welcomeBrowser" style="display: none">
@@ -155,7 +165,7 @@ Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to disp
 
 	<form id="loginForm" action="javascript:;">
 	<table>
-	<tr><th><label for="id_email">Email:</label></th><td><input id="id_email" maxlength="80" name="email" type="text" /></td></tr>
+	<tr><th><label for="id_email">Email:</label></th><td><input id="id_email" maxlength="80" name="email" type="email" /></td></tr>
 <tr><th><label for="id_password">Password:</label></th><td><input id="id_password" maxlength="40" name="password" type="password" /><br /><span class="helptext"><p class="helptext">Leave this field empty if you don't have an account yet,
 or if you have forgotten your pass&shy;word.
 A new password will be sent to your e-mail address.</p></span></td></tr>
@@ -174,7 +184,7 @@ A new password will be sent to your e-mail address.</p></span></td></tr>
 	
 	<form id="saveForm" action="javascript:;">
 	<table>
-	<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" maxlength="30" name="name" type="text" /><br /><span class="helptext"><p class="helptext">Worksheet names are notcase-sensitive.</p></span></td></tr>
+	<tr><th><label for="id_name">Name:</label></th><td><input id="id_name" maxlength="30" name="name" type="text" /><br /><span class="helptext"><p class="helptext">Worksheet names are not case-sensitive.</p></span></td></tr>
 	<tr>
 		<td class="submit" colspan="2">
 			<input type="button" class="submit" onclick="save()" value="Save" />

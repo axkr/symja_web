@@ -1,11 +1,13 @@
 package org.matheclipse.gwt.server;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.cache.Cache;
 import javax.servlet.ServletException;
@@ -17,40 +19,32 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.reflection.system.Names;
 
 import com.github.rjeschke.txtmark.BlockEmitter;
 import com.github.rjeschke.txtmark.Configuration;
-import com.github.rjeschke.txtmark.Configuration.Builder;
 import com.github.rjeschke.txtmark.Processor;
+import com.github.rjeschke.txtmark.Configuration.Builder;
 
-public class AJAXSearchServlet extends HttpServlet {
+public class AJAXDocServlet extends HttpServlet {
 
-	// private static final Logger log = Logger.getLogger(AJAXSearchServlet.class.getName());
 	//
-	// // private static final boolean UNIT_TEST = false;
+	// public static Cache cache = null;
 	//
-	// private static final boolean DEBUG = true;
+	// public static int APPLET_NUMBER = 1;
 	//
-	// // private static final boolean USE_MEMCACHE = false;
+	// public static final String UTF8 = "utf-8";
 	//
-	// private static final int MAX_NUMBER_OF_VARS = 100;
+	// public static final String EVAL_ENGINE = EvalEngine.class.getName();
+	//
+	// public static boolean INITIALIZED = false;
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -7668302968904993646L;
-
-	public static Cache cache = null;
-
-	public static int APPLET_NUMBER = 1;
-
-	public static final String UTF8 = "utf-8";
-
-	public static final String EVAL_ENGINE = EvalEngine.class.getName();
-
-	public static boolean INITIALIZED = false;
+	private static final long serialVersionUID = -7389567393700726482L;
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		doPost(req, res);
@@ -62,14 +56,13 @@ public class AJAXSearchServlet extends HttpServlet {
 		res.setHeader("Cache-Control", "no-cache");
 		PrintWriter out = res.getWriter();
 		try {
-			String name = "query";
+			String name = "p";
 			String value = req.getParameter(name);
 			if (value == null) {
-				out.println(createJSONDocString("No input expression posted!"));
-				return;
+				value="index";
 			}
 			StringBuilder markdownBuf = new StringBuilder(1024);
-			findDocumentation(markdownBuf, value);
+			printMarkdown(markdownBuf, value);
 			String markdownStr = markdownBuf.toString().trim();
 			if (markdownStr.length() > 0) {
 				String html = generateHTMLString(markdownBuf.toString());
@@ -85,30 +78,6 @@ public class AJAXSearchServlet extends HttpServlet {
 			return;
 		} catch (Exception e) {
 			// ...
-		}
-	}
-
-	private static void findDocumentation(Appendable out, String trimmedInput) {
-		String name = trimmedInput;// .substring(1);
-		IAST list = Names.getNamesByPrefix(name);
-		try {
-			if (list.size() != 2) {
-				for (int i = 1; i < list.size(); i++) {
-
-					out.append(list.get(i).toString());
-					if (i != list.size() - 1) {
-						out.append(", ");
-					}
-				}
-			}
-			out.append("\n");
-			if (list.size() == 2) {
-				printMarkdown(out, list.get(1).toString());
-			} else if (list.size() == 1
-					&& (name.equals("D") || name.equals("E") || name.equals("I") || name.equals("N"))) {
-				printMarkdown(out, name);
-			}
-		} catch (IOException e) {
 		}
 	}
 
