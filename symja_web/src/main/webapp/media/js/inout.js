@@ -208,7 +208,7 @@ function showGallery() {
 	  '1 + 2 - x*3*x / y',
 	  'Sin(Pi)',
 	  'Cos(30*Degree)',
-	  'Plot({Sin(x), Cos(x), Tan(x)}, {x, -3*Pi, 3*Pi})',  
+	  'Plot({Sin(x), Cos(x)}, {x, -3*Pi, 3*Pi})',  
 	  'N(E, 30)',
 	  'D(Sin(2*x) + Log(x) ^ 2, x)',
 	  'Integrate(Tan(x) ^ 5, x)',
