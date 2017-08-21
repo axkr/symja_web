@@ -65,7 +65,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	}
 
 	protected void doPost(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		res.setContentType("text/plain; charset=UTF-8");
+		res.setContentType("text/html; charset=UTF-8");
 		res.setCharacterEncoding("UTF-8");
 		res.setHeader("Cache-Control", "no-cache");
 		PrintWriter out = res.getWriter();
@@ -298,7 +298,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter) {
 		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 		StringWriter stw = new StringWriter();
-		mathUtil.toMathML(outExpr, stw);
+		mathUtil.toMathML(outExpr, stw, true);
 		JSONArray temp;
 
 		JSONObject resultsJSON = new JSONObject();
