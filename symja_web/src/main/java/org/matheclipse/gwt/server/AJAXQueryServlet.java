@@ -20,7 +20,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -31,9 +30,7 @@ import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.ASTNode;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.appengine.api.users.User;
@@ -47,11 +44,11 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	// private static final boolean UNIT_TEST = false;
 
-	private static final boolean DEBUG = true;
+	// private static final boolean DEBUG = true;
 
 	// private static final boolean USE_MEMCACHE = false;
 
-	private static final int MAX_NUMBER_OF_VARS = 100;
+	// private static final int MAX_NUMBER_OF_VARS = 100;
 
 	public static Cache cache = null;
 
@@ -149,9 +146,9 @@ public class AJAXQueryServlet extends HttpServlet {
 		}
 
 		try {
-			String[] result = evaluateString(request, engine, expression, numericMode, function);
-			outWriter.append(result[1]);
-			return outWriter.toString();
+			String[] result = evaluateString(request, engine, expression, numericMode, function, outWriter);
+			// outWriter.append(result[1]);
+			return result[1].toString();
 		} finally {
 			if (session != null) {
 				session.setAttribute("LastCalculationsHistory", engine.getOutList());
@@ -210,7 +207,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	// }
 
 	public static String[] evaluateString(HttpServletRequest request, EvalEngine engine, final String inputString,
-			final String numericMode, final String function) {
+			final String numericMode, final String function, StringWriter outWriter) {
 		boolean SIMPLE_SYNTAX = true;
 		String input = inputString.trim();
 		if (input.length() > 1 && input.charAt(0) == '?') {
@@ -218,17 +215,10 @@ public class AJAXQueryServlet extends HttpServlet {
 			Documentation.findDocumentation(buffer, input);
 			return createJSONString(engine, buffer.toString());
 		}
-		ASTNode node = null;
 		try {
-			try {
-				Parser parser = new Parser(SIMPLE_SYNTAX);
-				node = parser.parse(input);
-			} catch (SyntaxError se) {
-				SIMPLE_SYNTAX = false;
-				Parser parser = new Parser(SIMPLE_SYNTAX);
-				node = parser.parse(input);
-			}
-			IExpr inExpr = AST2Expr.CONST.convert(node);
+			ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
+			// throws SyntaxError exception, if syntax isn't valid
+			IExpr inExpr = parser.parse(input);
 			if (inExpr != null) {
 				if (numericMode.equals("N")) {
 					inExpr = F.N(inExpr);
@@ -276,7 +266,7 @@ public class AJAXQueryServlet extends HttpServlet {
 						IAST show = (IAST) outExpr;
 						return createJSONShow(engine, show);
 					}
-					return createJSONResult(engine, outExpr);
+					return createJSONResult(engine, outExpr, outWriter);
 				}
 				return createOutput(outBuffer, null, engine, function);
 
@@ -305,7 +295,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		}
 	}
 
-	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr) {
+	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter) {
 		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(outExpr, stw);
@@ -315,6 +305,22 @@ public class AJAXQueryServlet extends HttpServlet {
 		resultsJSON.put("line", new Integer(21));
 		resultsJSON.put("result", stw.toString());
 		temp = new JSONArray();
+		String message = outWriter.toString();
+		if (message.length() > 0) {
+			// "out": [{
+			// "prefix": "Power::infy",
+			// "message": true,
+			// "tag": "infy",
+			// "symbol": "Power",
+			// "text": "Infinite expression 1 / 0 encountered."}]}]}
+			JSONObject messageJSON = new JSONObject();
+			messageJSON.put("prefix", "Error");
+			messageJSON.put("message", Boolean.TRUE);
+			messageJSON.put("tag", "evaluation");
+			messageJSON.put("symbol", "General");
+			messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+			temp.add(messageJSON);
+		}
 		resultsJSON.put("out", temp);
 
 		temp = new JSONArray();
