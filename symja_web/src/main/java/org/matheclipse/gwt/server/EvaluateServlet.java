@@ -200,7 +200,7 @@ public class EvaluateServlet extends HttpServlet {
 				Parser parser = new Parser(SIMPLE_SYNTAX);
 				node = parser.parse(input);
 			}
-			IExpr inExpr = AST2Expr.CONST.convert(node);
+			IExpr inExpr = new AST2Expr(SIMPLE_SYNTAX, engine).convert(node);
 			if (inExpr != null) {
 				if (numericMode.equals("N")) {
 					inExpr = F.N(inExpr);
