@@ -130,7 +130,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
 			org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
 					.getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
-			engine = new EvalEngine(session.getId(), 256, 256, outs, false);
+			engine = new EvalEngine(session.getId(), 256, 256, outs, true);
 			if (context != null) {
 				engine.getContextPath().setGlobalContext(context);
 			}
@@ -141,7 +141,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			}
 		} else {
 			// isn't used
-			engine = new EvalEngine("no-session", 256, 256, outs, false);
+			engine = new EvalEngine("no-session", 256, 256, outs, true);
 			engine.setOutListDisabled(false, 100);
 		}
 

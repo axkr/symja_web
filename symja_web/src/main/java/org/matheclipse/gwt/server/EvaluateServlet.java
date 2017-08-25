@@ -117,9 +117,9 @@ public class EvaluateServlet extends HttpServlet {
 		PrintStream outs = new PrintStream(wouts);
 		EvalEngine engine = null;
 		if (session != null) {
-			engine = new EvalEngine(session.getId(), 256, 256, outs, false);
+			engine = new EvalEngine(session.getId(), 256, 256, outs, true);
 		} else {
-			engine = new EvalEngine("no-session", 256, 256, outs, false);
+			engine = new EvalEngine("no-session", 256, 256, outs, true);
 		}
 
 		try {
