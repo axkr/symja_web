@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Patterns and rules
 
 Some examples:
@@ -34,14 +36,3 @@ Optional arguments using `Optional`:
 ```
 
 The attributes `Flat`, `Orderless`, and `OneIdentity` affect pattern matching.
-
-## Functions Reference 
-
-* [Alternatives](functions/Alternatives.md)
-* [Condition](functions/Condition.md)
-* [Except](functions/Except.md)
-* [MatchQ](functions/MatchQ.md)
-* [Optional](functions/Optional.md)
-* [PatternTest](functions/PatternTest.md)
-* [Rule](functions/Rule.md)
-* [RuleDelayed](functions/RuleDelayed.md)

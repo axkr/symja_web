@@ -43,7 +43,7 @@
   </servlet-mapping>
   <servlet-mapping>
 	<servlet-name>doc</servlet-name>
-	<url-pattern>/ajax/doc/</url-pattern>
+	<url-pattern>/ajax/doc/*</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
 	<servlet-name>search</servlet-name>

@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Comparisons and Boolean logic
 
 Values can be compared for equality using the `==` operator:

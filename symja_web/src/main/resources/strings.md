@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Strings
 
 Strings can be entered with `"` as delimeters:

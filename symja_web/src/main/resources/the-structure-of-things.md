@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## The structure of things
 
 Every expression in Symja is built upon the same principle: it consists of a head and an arbitrary number of children, 

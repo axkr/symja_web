@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Scoping
 
 By default, all symbols are “global” in Symja, i.e. they can be read and written in any part of your program.

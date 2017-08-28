@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Lists
 
 Lists can be entered in Symja with curly braces `{` and `}`:

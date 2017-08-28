@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Symbols and assignments
 
 Symbols need not be declared in Symja, they can just be entered and remain variable

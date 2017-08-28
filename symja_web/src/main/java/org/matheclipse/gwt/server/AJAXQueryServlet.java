@@ -213,7 +213,8 @@ public class AJAXQueryServlet extends HttpServlet {
 		if (input.length() > 1 && input.charAt(0) == '?') {
 			StringBuilder buffer = new StringBuilder();
 			Documentation.findDocumentation(buffer, input);
-			return createJSONString(engine, buffer.toString());
+			return createJSONResult(engine, F.stringx(buffer), outWriter);
+			// return createJSONString(engine, buffer.toString());
 		}
 		try {
 			ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);

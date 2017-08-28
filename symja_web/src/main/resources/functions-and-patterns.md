@@ -1,3 +1,5 @@
+[<< Back](javascript:loadDoc('/index'))
+
 ## Functions and patterns
 
 Functions can be defined in the following way:
