@@ -130,7 +130,7 @@ See the <a href="javascript:showGallery()">gallery</a> for some examples or the 
 <!--<p><small>This box will disappear as soon as you submit your first query.</small></p>-->
 </p>
 <p>Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.
-For further information about the project visit <a href="https://github.com/axkr/symja_web" target="_blank">the github.com page</a>.</p>
+If you have any questions, please contact us on <a href="https://gitter.im/symja_android_library/Lobby">Gitter</a>.</p>
 <div style="position:absolute;right:0;bottom:-2.8em;">
   <p style="text-align:right;color:#3f3f3f;"><label><input type="checkbox" id="hideStartupMsg" />Do not show on startup.</label></p>
 </div>
