@@ -105,7 +105,7 @@ Division by zero is forbidden:
 
 Other expressions involving Infinity are evaluated:
 ```
-Infinity + 2 Infinity
+Infinity + 2 * Infinity
 ```
 
 In contrast to combinatorial belief, 0^0 is undefined:
