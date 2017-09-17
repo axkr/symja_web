@@ -210,8 +210,7 @@ function showGallery() {
 	  'Cos(30*Degree)',
 	  'Plot({Sin(x), Cos(x)}, {x, -3*Pi, 3*Pi})',  
 	  'N(E, 30)',
-	  'D(Sin(2*x) + Log(x) ^ 2, x)',
-	  'Integrate(Tan(x) ^ 5, x)',
+	  'D(Sin(2*x) + Log(x) ^ 2, x)',	  
 	  'Solve({x^2-11==y, x+y==-9}, {x,y})',
 	  'Factor(-1+x^16)',
 	  'Expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))',
@@ -220,6 +219,7 @@ function showGallery() {
 	  'A = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}; MatrixForm(A)',
 	  'LinearSolve(A, {1, 1, 1}) // MatrixForm',
 	  'Eigenvalues(A)',
-	  '# ^ 2 & /@ Range(10)'
+	  '# ^ 2 & /@ Range(10)',
+	  'Integrate(Tan(x) ^ 5, x)'
 	]);
 }

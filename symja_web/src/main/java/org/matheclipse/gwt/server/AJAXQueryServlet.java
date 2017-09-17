@@ -598,6 +598,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	public synchronized static void initialization() {
 		AJAXQueryServlet.INITIALIZED = true;
 		Config.JAS_NO_THREADS = true;
+		F.THREAD_FACTORY=com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		// Config.LOAD_SERIALIZED_RULES = true;
 		F.initSymbols(null, new SymbolObserver(), false);
 		// Integrate.initSerializedRules(F.Integrate);
@@ -608,7 +609,6 @@ public class AJAXQueryServlet extends HttpServlet {
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
 		EvalEngine.get().setPackageMode(false);
-		EvaluateServlet.log.info("EvaluateServlet-Integrate initialized");
-
+		AJAXQueryServlet.log.info("AJAXQueryServlet initialized");
 	}
 }
