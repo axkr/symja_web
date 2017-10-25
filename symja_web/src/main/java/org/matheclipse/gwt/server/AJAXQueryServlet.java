@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -297,7 +300,9 @@ public class AJAXQueryServlet extends HttpServlet {
 	}
 
 	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter) {
-		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false, decimalFormat);
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(outExpr, stw, true);
 		JSONArray temp;
