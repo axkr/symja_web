@@ -33,7 +33,7 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
-		<hipparchus.version>1.1</hipparchus.version>
+		<hipparchus.version>1.2</hipparchus.version>
 	</properties>
 
 	<prerequisites>
