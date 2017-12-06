@@ -97,7 +97,7 @@ public class AdminServlet extends HttpServlet {
 			// if (engine == null) {
 			// ExprFactory f = new ExprFactory(new SystemNamespace());
 			// PrintStream pout = new PrintStream();
-			engine = new EvalEngine(session.getId(), 256, 256, outs, false);
+			engine = new EvalEngine(session.getId(), 256, 256, outs, outs, false);
 			// session.setAttribute(EVAL_ENGINE, engine);
 			// // init ThreadLocal instance:
 			// EvalEngine.get();
@@ -109,7 +109,7 @@ public class AdminServlet extends HttpServlet {
 			// EvalEngine.set(engine);
 			// }
 		} else {
-			engine = new EvalEngine("no-session", 256, 256, outs, false);
+			engine = new EvalEngine("no-session", 256, 256, outs, outs, false);
 		}
 
 		try {

@@ -115,19 +115,24 @@ public class EvaluateServlet extends HttpServlet {
 		final StringWriter outWriter = new StringWriter();
 		WriterOutputStream wouts = new WriterOutputStream(outWriter);
 		PrintStream outs = new PrintStream(wouts);
+		
+		final StringWriter errorWriter = new StringWriter();
+		WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+		PrintStream errors = new PrintStream(werrors);
+		
 		EvalEngine engine = null;
 		if (session != null) {
-			engine = new EvalEngine(session.getId(), 256, 256, outs, true);
+			engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
 		} else {
-			engine = new EvalEngine("no-session", 256, 256, outs, true);
+			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 		}
 
 		try {
 			String[] result = evaluateString(request, engine, expression, numericMode, function);
-//			if (!saveModifiedUserSymbols(engine)) {
-//				return counter + ";error;Number of user '$'-symbols\ngreater than " + MAX_NUMBER_OF_VARS
-//						+ " or \nformula to big!";
-//			}
+			// if (!saveModifiedUserSymbols(engine)) {
+			// return counter + ";error;Number of user '$'-symbols\ngreater than " + MAX_NUMBER_OF_VARS
+			// + " or \nformula to big!";
+			// }
 			outWriter.append(result[1]);
 			return counter + ";" + result[0] + ";" + outWriter.toString();
 		} finally {
@@ -137,49 +142,49 @@ public class EvaluateServlet extends HttpServlet {
 
 	}
 
-//	private static boolean saveModifiedUserSymbols(EvalEngine engine) {
-//		UserService userService = UserServiceFactory.getUserService();
-//		if (userService.getCurrentUser() != null) {
-//			User user = userService.getCurrentUser();
-//			if (user != null) {
-//				try {
-//					UserDataEntity userData = UserDataService.findByUserId(user);
-//					if (userData == null) {
-//						userData = new UserDataEntity(user);
-//						UserDataService.save(userData);
-//					}
-//					Set<ISymbol> modifiedSymbols = engine.getModifiedVariables();
-//					for (ISymbol symbol : modifiedSymbols) {
-//						int attributes = symbol.getAttributes();
-//						String source;
-//
-//						source = symbol.definitionToString();
-//						if (source.length() > Short.MAX_VALUE) {
-//							return false;
-//						}
-//						UserSymbolEntity symbolEntity = new UserSymbolEntity(user, symbol.toString(), source,
-//								attributes);
-//						UserSymbolEntity newSymbolEntity = UserSymbolService.modify(symbolEntity);
-//						if (newSymbolEntity != null) {
-//							userData.incSymbolCounter();
-//							if (userData.getSymbolCounter() > MAX_NUMBER_OF_VARS) {
-//								UserSymbolService.delete(newSymbolEntity);
-//								userData.decSymbolCounter();
-//								return false;
-//							}
-//						}
-//					}
-//					UserDataService.update(userData, new Date());
-//				} catch (IOException e) {
-//					if (DEBUG) {
-//						e.printStackTrace();
-//					}
-//					return false;
-//				}
-//			}
-//		}
-//		return true;
-//	}
+	// private static boolean saveModifiedUserSymbols(EvalEngine engine) {
+	// UserService userService = UserServiceFactory.getUserService();
+	// if (userService.getCurrentUser() != null) {
+	// User user = userService.getCurrentUser();
+	// if (user != null) {
+	// try {
+	// UserDataEntity userData = UserDataService.findByUserId(user);
+	// if (userData == null) {
+	// userData = new UserDataEntity(user);
+	// UserDataService.save(userData);
+	// }
+	// Set<ISymbol> modifiedSymbols = engine.getModifiedVariables();
+	// for (ISymbol symbol : modifiedSymbols) {
+	// int attributes = symbol.getAttributes();
+	// String source;
+	//
+	// source = symbol.definitionToString();
+	// if (source.length() > Short.MAX_VALUE) {
+	// return false;
+	// }
+	// UserSymbolEntity symbolEntity = new UserSymbolEntity(user, symbol.toString(), source,
+	// attributes);
+	// UserSymbolEntity newSymbolEntity = UserSymbolService.modify(symbolEntity);
+	// if (newSymbolEntity != null) {
+	// userData.incSymbolCounter();
+	// if (userData.getSymbolCounter() > MAX_NUMBER_OF_VARS) {
+	// UserSymbolService.delete(newSymbolEntity);
+	// userData.decSymbolCounter();
+	// return false;
+	// }
+	// }
+	// }
+	// UserDataService.update(userData, new Date());
+	// } catch (IOException e) {
+	// if (DEBUG) {
+	// e.printStackTrace();
+	// }
+	// return false;
+	// }
+	// }
+	// }
+	// return true;
+	// }
 
 	public static String[] evaluateString(HttpServletRequest request, EvalEngine engine, final String inputString,
 			final String numericMode, final String function) {
@@ -270,15 +275,15 @@ public class EvaluateServlet extends HttpServlet {
 		StringBuilder bldr = new StringBuilder();
 		boolean rest = false;
 		bldr.append("{");
-//		QueryResultIterable<UserSymbolEntity> qri = UserSymbolService.getAll(userId);
-//		for (UserSymbolEntity userSymbolEntity : qri) {
-//			if (rest) {
-//				bldr.append(", ");
-//			} else {
-//				rest = true;
-//			}
-//			bldr.append(userSymbolEntity.getSymbolName());
-//		}
+		// QueryResultIterable<UserSymbolEntity> qri = UserSymbolService.getAll(userId);
+		// for (UserSymbolEntity userSymbolEntity : qri) {
+		// if (rest) {
+		// bldr.append(", ");
+		// } else {
+		// rest = true;
+		// }
+		// bldr.append(userSymbolEntity.getSymbolName());
+		// }
 		bldr.append("}");
 		return new String[] { "expr", bldr.toString() };
 	}

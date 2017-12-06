@@ -128,12 +128,17 @@ public class AJAXQueryServlet extends HttpServlet {
 		final StringWriter outWriter = new StringWriter();
 		WriterOutputStream wouts = new WriterOutputStream(outWriter);
 		PrintStream outs = new PrintStream(wouts);
+
+		final StringWriter errorWriter = new StringWriter();
+		WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+		PrintStream errors = new PrintStream(werrors);
+
 		EvalEngine engine = null;
 		if (session != null) {
 			LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
 			org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
 					.getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
-			engine = new EvalEngine(session.getId(), 256, 256, outs, true);
+			engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
 			if (context != null) {
 				engine.getContextPath().setGlobalContext(context);
 			}
@@ -144,12 +149,13 @@ public class AJAXQueryServlet extends HttpServlet {
 			}
 		} else {
 			// isn't used
-			engine = new EvalEngine("no-session", 256, 256, outs, true);
+			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 			engine.setOutListDisabled(false, 100);
 		}
 
 		try {
-			String[] result = evaluateString(request, engine, expression, numericMode, function, outWriter);
+			String[] result = evaluateString(request, engine, expression, numericMode, function, outWriter,
+					errorWriter);
 			// outWriter.append(result[1]);
 			return result[1].toString();
 		} finally {
@@ -210,14 +216,13 @@ public class AJAXQueryServlet extends HttpServlet {
 	// }
 
 	public static String[] evaluateString(HttpServletRequest request, EvalEngine engine, final String inputString,
-			final String numericMode, final String function, StringWriter outWriter) {
+			final String numericMode, final String function, StringWriter outWriter, StringWriter errorWriter) {
 		boolean SIMPLE_SYNTAX = true;
 		String input = inputString.trim();
 		if (input.length() > 1 && input.charAt(0) == '?') {
 			StringBuilder buffer = new StringBuilder();
 			Documentation.findDocumentation(buffer, input);
-			return createJSONResult(engine, F.stringx(buffer), outWriter);
-			// return createJSONString(engine, buffer.toString());
+			return createJSONResult(engine, F.stringx(buffer), outWriter, errorWriter);
 		}
 		try {
 			ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
@@ -270,7 +275,7 @@ public class AJAXQueryServlet extends HttpServlet {
 						IAST show = (IAST) outExpr;
 						return createJSONShow(engine, show);
 					}
-					return createJSONResult(engine, outExpr, outWriter);
+					return createJSONResult(engine, outExpr, outWriter, errorWriter);
 				}
 				return createOutput(outBuffer, null, engine, function);
 
@@ -299,7 +304,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		}
 	}
 
-	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter) {
+	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter, StringWriter errorWriter) {
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
 		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false, decimalFormat);
@@ -311,7 +316,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		resultsJSON.put("line", new Integer(21));
 		resultsJSON.put("result", stw.toString());
 		temp = new JSONArray();
-		String message = outWriter.toString();
+		String message = errorWriter.toString();
 		if (message.length() > 0) {
 			// "out": [{
 			// "prefix": "Power::infy",
@@ -321,6 +326,17 @@ public class AJAXQueryServlet extends HttpServlet {
 			// "text": "Infinite expression 1 / 0 encountered."}]}]}
 			JSONObject messageJSON = new JSONObject();
 			messageJSON.put("prefix", "Error");
+			messageJSON.put("message", Boolean.TRUE);
+			messageJSON.put("tag", "evaluation");
+			messageJSON.put("symbol", "General");
+			messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+			temp.add(messageJSON);
+		}
+
+		message = outWriter.toString();
+		if (message.length() > 0) {
+			JSONObject messageJSON = new JSONObject();
+			messageJSON.put("prefix", "Output");
 			messageJSON.put("message", Boolean.TRUE);
 			messageJSON.put("tag", "evaluation");
 			messageJSON.put("symbol", "General");
@@ -337,26 +353,26 @@ public class AJAXQueryServlet extends HttpServlet {
 		return new String[] { "mathml", JSONValue.toJSONString(json) };
 	}
 
-	public static String[] createJSONString(EvalEngine engine, String outExpr) {
-		StringWriter stw = new StringWriter();
-		stw.append("<math><mtext>");
-		stw.append(outExpr);
-		stw.append("</mtext></math>");
-		JSONArray temp;
-
-		JSONObject resultsJSON = new JSONObject();
-		resultsJSON.put("line", new Integer(21));
-		resultsJSON.put("result", stw.toString());
-		temp = new JSONArray();
-		resultsJSON.put("out", temp);
-
-		temp = new JSONArray();
-		temp.add(resultsJSON);
-		JSONObject json = new JSONObject();
-		json.put("results", temp);
-
-		return new String[] { "mathml", JSONValue.toJSONString(json) };
-	}
+	// private static String[] createJSONString(EvalEngine engine, String outExpr) {
+	// StringWriter stw = new StringWriter();
+	// stw.append("<math><mtext>");
+	// stw.append(outExpr);
+	// stw.append("</mtext></math>");
+	// JSONArray temp;
+	//
+	// JSONObject resultsJSON = new JSONObject();
+	// resultsJSON.put("line", new Integer(21));
+	// resultsJSON.put("result", stw.toString());
+	// temp = new JSONArray();
+	// resultsJSON.put("out", temp);
+	//
+	// temp = new JSONArray();
+	// temp.add(resultsJSON);
+	// JSONObject json = new JSONObject();
+	// json.put("results", temp);
+	//
+	// return new String[] { "mathml", JSONValue.toJSONString(json) };
+	// }
 
 	public static String[] createJSONShow(EvalEngine engine, IAST show) throws IOException {
 		StringWriter stw = new StringWriter();
@@ -603,7 +619,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	public synchronized static void initialization() {
 		AJAXQueryServlet.INITIALIZED = true;
 		Config.JAS_NO_THREADS = true;
-		F.THREAD_FACTORY=com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+		F.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		// Config.LOAD_SERIALIZED_RULES = true;
 		F.initSymbols(null, new SymbolObserver(), false);
 		// Integrate.initSerializedRules(F.Integrate);

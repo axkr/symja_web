@@ -16,7 +16,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 
 public class MathEvaluator {
 	public static double[][] eval(final StringWriter buf, final String inputString) throws Exception {
-		EvalEngine fEvalEngine = new EvalEngine("", 64, 100000, System.out, false);
+		EvalEngine fEvalEngine = new EvalEngine("", 64, 100000, System.out, System.err, false);
 		IExpr parsedExpression = fEvalEngine.parse(inputString);
 		fEvalEngine.reset();
 		IExpr evaluationResult = fEvalEngine.evaluate(parsedExpression);
