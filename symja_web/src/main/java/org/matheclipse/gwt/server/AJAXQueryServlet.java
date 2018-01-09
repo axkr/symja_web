@@ -375,7 +375,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	// }
 
 	public static String[] createJSONShow(EvalEngine engine, IAST show) throws IOException {
-		StringWriter stw = new StringWriter();
+		StringBuilder stw = new StringBuilder();
 		stw.append("<math><mtable><mtr><mtd>");
 		Show2SVG.toSVG(show, stw);
 		stw.append("</mtd></mtr></mtable></math>");
