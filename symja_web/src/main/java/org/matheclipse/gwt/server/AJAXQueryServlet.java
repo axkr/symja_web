@@ -62,7 +62,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	public static final String EVAL_ENGINE = EvalEngine.class.getName();
 
-	public static boolean INITIALIZED = false;
+	public static volatile boolean INITIALIZED = false;
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		doPost(req, res);

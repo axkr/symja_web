@@ -6,8 +6,6 @@
   <warmup-requests-enabled>true</warmup-requests-enabled>
   
   <static-files> 
-    <include path="/screen.css"/>
-    <include path="/iphone.css"/>
     <include path="/favicon.ico"/>
  	<include path="/robots.txt"/>
  	<include path="/media/**.*"/> 
@@ -21,9 +19,5 @@
   <system-properties>
 	<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
   </system-properties>
-	
-  <admin-console>
-    <page name="Load Package" url="/admin.jsp"/>
-  </admin-console>
   
 </appengine-web-app>
