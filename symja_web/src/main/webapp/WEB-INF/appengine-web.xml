@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
-  <precompilation-enabled>true</precompilation-enabled>
-  <threadsafe>true</threadsafe> 
-  <runtime>java8</runtime> 
-  <warmup-requests-enabled>true</warmup-requests-enabled>
-  
-  <static-files> 
-    <include path="/favicon.ico"/>
- 	<include path="/robots.txt"/>
- 	<include path="/media/**.*"/> 
- 	<include path="/images/**.*"/>  
- 	<include path="/static/**.*"/>  
-  </static-files>
-  
-  <sessions-enabled>true</sessions-enabled>
-  
-  <!-- Configure java.util.logging -->
-  <system-properties>
-	<property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
-  </system-properties>
-  
+	<precompilation-enabled>true</precompilation-enabled>
+	<threadsafe>true</threadsafe>
+	<runtime>java8</runtime>
+	<warmup-requests-enabled>true</warmup-requests-enabled> 
+	<automatic-scaling>
+		<min-idle-instances>1</min-idle-instances> 
+	</automatic-scaling>
+
+
+	<static-files>
+		<include path="/favicon.ico" />
+		<include path="/robots.txt" />  
+		<include path="/en/**.*" />
+		<include path="/media/**.*" />
+		<include path="/images/**.*" />
+		<include path="/static/**.*" />
+	</static-files>
+
+	<sessions-enabled>true</sessions-enabled>
+
+	<!-- Configure java.util.logging -->
+	<system-properties>
+		<property name="java.util.logging.config.file" value="WEB-INF/logging.properties" />
+	</system-properties>
+
 </appengine-web-app>
