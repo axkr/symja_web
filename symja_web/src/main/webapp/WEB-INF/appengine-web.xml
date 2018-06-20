@@ -3,7 +3,6 @@
 	<precompilation-enabled>true</precompilation-enabled>
 	<threadsafe>true</threadsafe>
 	<runtime>java8</runtime>
-	<warmup-requests-enabled>true</warmup-requests-enabled> 
 	<automatic-scaling>
 		<min-idle-instances>1</min-idle-instances> 
 	</automatic-scaling>
