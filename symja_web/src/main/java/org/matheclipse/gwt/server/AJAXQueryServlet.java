@@ -157,8 +157,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		}
 
 		try {
-			String[] result = evaluateString(request, engine, expression, numericMode, function, outWriter,
-					errorWriter);
+			String[] result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
 			// outWriter.append(result[1]);
 			return result[1].toString();
 		} finally {
@@ -220,8 +219,8 @@ public class AJAXQueryServlet extends HttpServlet {
 	// return true;
 	// }
 
-	public static String[] evaluateString(HttpServletRequest request, EvalEngine engine, final String inputString,
-			final String numericMode, final String function, StringWriter outWriter, StringWriter errorWriter) {
+	public static String[] evaluateString(EvalEngine engine, final String inputString, final String numericMode,
+			final String function, StringWriter outWriter, StringWriter errorWriter) {
 		boolean SIMPLE_SYNTAX = true;
 		String input = inputString.trim();
 		if (input.length() > 1 && input.charAt(0) == '?') {
