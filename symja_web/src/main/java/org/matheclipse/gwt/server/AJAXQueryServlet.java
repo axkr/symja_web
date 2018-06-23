@@ -7,7 +7,6 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -36,25 +35,11 @@ import org.matheclipse.parser.client.math.MathException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
 	private static final long serialVersionUID = 6265703737413093134L;
 
 	private static final Logger log = Logger.getLogger(AJAXQueryServlet.class.getName());
-
-	private static Cache<String, LastCalculationsHistory> HISTORY_CACHE = //
-			CacheBuilder.newBuilder().//
-					maximumSize(5000).//
-					expireAfterAccess(120, TimeUnit.MINUTES).//
-					build();
-
-	private static Cache<String, org.matheclipse.core.expression.Context> CONTEXT_CACHE = //
-			CacheBuilder.newBuilder().//
-					maximumSize(5000).//
-					expireAfterAccess(120, TimeUnit.MINUTES).//
-					build();
 
 	public static int APPLET_NUMBER = 1;
 
@@ -63,6 +48,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	public static final String EVAL_ENGINE = EvalEngine.class.getName();
 
 	public static volatile boolean INITIALIZED = false;
+ 
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		doPost(req, res);
@@ -104,6 +90,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			String result = evaluate(req, value, numericModeValue, functionValue, 0);
 			out.println(result);
 		} catch (Exception e) {
+			e.printStackTrace();
 			String msg = e.getMessage();
 			if (msg != null) {
 				out.println(createJSONErrorString("Exception: " + msg));
@@ -136,11 +123,10 @@ public class AJAXQueryServlet extends HttpServlet {
 
 		EvalEngine engine = null;
 		if (session != null) {
-			// LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
-			// org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
-			// .getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
-			LastCalculationsHistory lch = HISTORY_CACHE.getIfPresent(session.getId());
-			org.matheclipse.core.expression.Context context = CONTEXT_CACHE.getIfPresent(session.getId());
+			String sessionID = session.getId();
+			LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
+			org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
+					.getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
 			engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
 			if (context != null) {
 				engine.getContextPath().setGlobalContext(context);
@@ -162,11 +148,10 @@ public class AJAXQueryServlet extends HttpServlet {
 			return result[1].toString();
 		} finally {
 			if (session != null) {
-				// session.setAttribute("LastCalculationsHistory", engine.getOutList());
-				// session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME,
-				// engine.getContextPath().getGlobalContext());
-				HISTORY_CACHE.put(session.getId(), engine.getOutList());
-				CONTEXT_CACHE.put(session.getId(), engine.getContextPath().getGlobalContext());
+				String sessionID = session.getId();
+				session.setAttribute("LastCalculationsHistory", engine.getOutList());
+				session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME,
+						engine.getContextPath().getGlobalContext());
 			}
 
 			// tear down associated ThreadLocal from EvalEngine
