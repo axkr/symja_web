@@ -141,6 +141,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 			engine.setOutListDisabled(false, 100);
 		}
+		engine.setPackageMode(false);
 
 		try {
 			String[] result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
@@ -608,18 +609,15 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	public synchronized static void initialization() {
 		AJAXQueryServlet.INITIALIZED = true;
-		Config.JAS_NO_THREADS = true;
-		F.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
-		// Config.LOAD_SERIALIZED_RULES = true;
-		F.initSymbols(null, new SymbolObserver(), false);
-		// Integrate.initSerializedRules(F.Integrate);
-
-		// F.Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+		Config.JAS_NO_THREADS = false;
+		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		EvalEngine.get().setPackageMode(true);
+		F.initSymbols(null, new SymbolObserver(), false);
+		
 		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
-		EvalEngine.get().setPackageMode(false);
+		Config.JAS_NO_THREADS = true;
 		AJAXQueryServlet.log.info("AJAXQueryServlet initialized");
 	}
 }
