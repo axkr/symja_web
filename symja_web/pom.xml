@@ -7,8 +7,8 @@
 	<artifactId>matheclipse-web</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<description>Symja Java Symbolic Math library.</description>
-	<url>https://bitbucket.org/axelclk/symja_android_library</url>
+	<description>Symja Java web interface</description>
+	<url>https://github.com/axkr/symja_web</url>
 
 	<developers>
 		<developer>
