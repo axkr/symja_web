@@ -16,9 +16,9 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>Symja</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1"> 
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> 
 <!-- make page fit nicer in iOS -->
-
+ 
 <link rel="stylesheet" type="text/css" href="/media/css/styles.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/documentation.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/message.css" />
