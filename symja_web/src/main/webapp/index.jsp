@@ -18,7 +18,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> 
 <!-- make page fit nicer in iOS -->
- 
+
 <link rel="stylesheet" type="text/css" href="/media/css/styles.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/documentation.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/message.css" />
@@ -71,20 +71,23 @@
 </head>
 
 <body>
- <!--
+
 <header>
 <div id="headerleft"> 
-  <img id="logo" class="load" src="/media/img/logo-heptatom.svg" height="32" alt="Logo" />
+ <!--  <img id="logo" class="load" src="/media/img/logo-heptatom.svg" height="32" alt="Logo" />
   <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" />
   <div class="menu">
     <a href="javascript:showOpen()" title="Open"><i class="fa fa-file-text"></i></a>
     <a href="javascript:showSave()" title="Save"><i class="fa fa-download"></i></a>
     <a href="javascript:createLink()" title="Generate hash"><i class="fa fa-share-alt"></i></a>
    </div>
+    -->
 </div>
 
 <div id="headerright">
   <input id="search" type="text" /><a id="doclink" href="javascript:toggleDoc()" title="Docs"><i class="fa fa-lg fa-question-circle-o"></i></a>
+
+ <!-- 
   <div id="notAuthenticated" class="login">
     <a href="javascript:showLogin()" class="fa fa-lg fa-sign-in" title="Sign in"></a>
   </div>
@@ -92,9 +95,10 @@
   <div id="authenticated" class="login" style="display: none">
     <span id="username"></span><a id="logout" href="javascript:logout()" class="fa fa-lg fa-sign-out" title="Sign out"></a>
   </div>
+  -->
 </div>
 </header> 
--->
+
 <!-- Login -->
 <script type="text/javascript">
   var REQUIRE_LOGIN = true;

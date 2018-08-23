@@ -273,7 +273,7 @@ a.pdf {
 #document,
 #code {
   position: absolute;
-  top: 27px;
+  top: 54px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -314,9 +314,9 @@ a.pdf {
   position: absolute;
   margin-left: auto;
   margin-right: auto;
-  left: 10%;
+  left: 25%;
   width: 50%;
-  bottom: 1em;
+  bottom: 4em;
 }
 #welcomeContainer p {
   margin-top: 0;
