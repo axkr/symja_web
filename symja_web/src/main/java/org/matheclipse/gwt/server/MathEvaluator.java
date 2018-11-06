@@ -58,7 +58,7 @@ public class MathEvaluator {
 		// EvalEngine fEvalEngine = new EvalEngine("", 64, 100000,System.out);
 		evalEngine.reset();
 		IExpr evaluationResult = evalEngine.evaluate(parsedExpression);
-		// fEvalEngine.addOut(expr);
+		// evalEngine.addOut(evaluationResult);
 		// if (evaluationResult instanceof IAST) {
 		// final IAST show = (IAST) evaluationResult;
 		// if ((show.size() == 2) && show.isAST("Show")) {

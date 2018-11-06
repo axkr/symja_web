@@ -1,19 +1,24 @@
 package org.matheclipse.gwt.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,6 +28,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.graphics.Show2SVG;
@@ -32,23 +38,37 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.math.MathException;
 
+import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
 public class AJAXQueryServlet extends HttpServlet {
+
+	private final static int HALF_MEGA = 1024 * 500;
+	
+	private static final String SESSION_ENTITY = "USER_DATA";
+
 	private static final long serialVersionUID = 6265703737413093134L;
 
 	private static final Logger log = Logger.getLogger(AJAXQueryServlet.class.getName());
 
-	public static int APPLET_NUMBER = 1;
+	// public static int APPLET_NUMBER = 1;
 
 	public static final String UTF8 = "utf-8";
 
 	public static final String EVAL_ENGINE = EvalEngine.class.getName();
 
 	public static volatile boolean INITIALIZED = false;
- 
 
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
 		doPost(req, res);
@@ -112,7 +132,6 @@ public class AJAXQueryServlet extends HttpServlet {
 			return createJSONErrorString("Input expression greater than: " + Short.MAX_VALUE + " characters!");
 		}
 
-		HttpSession session = request.getSession();
 		final StringWriter outWriter = new StringWriter();
 		WriterOutputStream wouts = new WriterOutputStream(outWriter);
 		PrintStream outs = new PrintStream(wouts);
@@ -122,43 +141,131 @@ public class AJAXQueryServlet extends HttpServlet {
 		PrintStream errors = new PrintStream(werrors);
 
 		EvalEngine engine = null;
-		if (session != null) {
-			String sessionID = session.getId();
-			LastCalculationsHistory lch = (LastCalculationsHistory) session.getAttribute("LastCalculationsHistory");
-			org.matheclipse.core.expression.Context context = (org.matheclipse.core.expression.Context) session
-					.getAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME);
-			engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
-			if (context != null) {
-				engine.getContextPath().setGlobalContext(context);
-			}
-			if (lch != null) {
-				engine.setOutListDisabled(lch);
-			} else {
-				engine.setOutListDisabled(false, 100);
+		UserService userService = UserServiceFactory.getUserService();
+		if (userService.isUserLoggedIn()) {
+			User user = userService.getCurrentUser();
+			engine = new EvalEngine(user.getEmail(), 256, 256, outs, errors, true);
+			if (getEntity(user, engine) == null) {
+				engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 			}
 		} else {
 			// isn't used
 			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
-			engine.setOutListDisabled(false, 100);
 		}
+		engine.setOutListDisabled(false, 100);
 		engine.setPackageMode(false);
-
+		EvalEngine.set(engine);
+		String[] result = null;
 		try {
-			String[] result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
-			// outWriter.append(result[1]);
-			return result[1].toString();
+			result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
 		} finally {
-			if (session != null) {
-				String sessionID = session.getId();
-				session.setAttribute("LastCalculationsHistory", engine.getOutList());
-				session.setAttribute(org.matheclipse.core.expression.ContextPath.GLOBAL_CONTEXT_NAME,
-						engine.getContextPath().getGlobalContext());
+			if (userService.isUserLoggedIn()) {
+				User user = userService.getCurrentUser();
+				if (!putEntity(user, engine)) {
+					// TODO error message
+					return createJSONError("User data limit: "+HALF_MEGA+" bytes exceeded")[1];
+				}
 			}
-
 			// tear down associated ThreadLocal from EvalEngine
 			EvalEngine.remove();
 		}
+		if (result == null) {
+			return createJSONError("Calculation result is undefined")[1];
+		}
+		return result[1].toString();
+	}
 
+	private static EvalEngine getEntity(User user, EvalEngine engine) {
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+
+		Context context = (Context) syncCache.get(user.getUserId() + "_c");
+		if (context != null) {
+			engine.getContextPath().setGlobalContext(context);
+			LastCalculationsHistory lch = (LastCalculationsHistory) syncCache.get(user.getUserId() + "_h");
+			if (lch != null) {
+				engine.setOutListDisabled(lch);
+			}
+			return engine;
+		}
+
+		Key pageKey = KeyFactory.createKey(SESSION_ENTITY, user.getUserId());
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Entity entity;
+
+		try {
+			entity = datastore.get(pageKey);
+			ByteArrayInputStream bais = new ByteArrayInputStream(((Blob) entity.getProperty("context")).getBytes());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			Context c = (Context) ois.readObject();
+			if (context != null) {
+				engine.getContextPath().setGlobalContext(c);
+			}
+			ois.close();
+			bais.close();
+
+			bais = new ByteArrayInputStream(((Blob) entity.getProperty("history")).getBytes());
+			ois = new ObjectInputStream(bais);
+			LastCalculationsHistory lch = (LastCalculationsHistory) ois.readObject();
+			if (lch != null) {
+				engine.setOutListDisabled(lch);
+			}
+			ois.close();
+			bais.close();
+
+		} catch (IOException e1) {
+
+		} catch (ClassNotFoundException e1) {
+
+		} catch (EntityNotFoundException e2) {
+
+		}
+		return engine;
+	}
+
+	private static boolean putEntity(User user, EvalEngine engine) {
+		Entity page = new Entity(SESSION_ENTITY, user.getUserId());
+		page.setProperty("creator", user);
+		Serializable context = (Serializable) engine.getContextPath().getGlobalContext();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		boolean stored = true;
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(context);
+			if (baos.size() < HALF_MEGA) {
+				page.setProperty("context", new Blob(baos.toByteArray()));
+			} else {
+				return false;
+			}
+			oos.close();
+			baos.close();
+		} catch (IOException ioexception) {
+
+		}
+
+		Serializable history = (Serializable) engine.getOutList();
+		baos = new ByteArrayOutputStream();
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(history);
+			if (baos.size() < HALF_MEGA) {
+				page.setProperty("history", new Blob(baos.toByteArray()));
+			} else {
+				return false;
+			}
+			oos.close();
+			baos.close();
+		} catch (IOException ioexception) {
+
+		}
+
+		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+		syncCache.put(user.getUserId() + "_c", context);
+		syncCache.put(user.getUserId() + "_h", history);
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		datastore.put(page);
+		return stored;
 	}
 
 	// private static boolean saveModifiedUserSymbols(EvalEngine engine) {
@@ -256,7 +363,7 @@ public class AJAXQueryServlet extends HttpServlet {
 				// putToMemcache(inExpr, outExpr);
 				// }
 				// }
-				EvalEngine.get().addOut(outExpr);
+				engine.addOut(outExpr);
 				if (outExpr != null) {
 					if (outExpr.isAST(F.Graphics) || outExpr.isAST(F.Graphics3D)) {
 						outExpr = F.Show(outExpr);
@@ -613,7 +720,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
-		
+
 		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);

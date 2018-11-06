@@ -96,6 +96,28 @@
     <span id="username"></span><a id="logout" href="javascript:logout()" class="fa fa-lg fa-sign-out" title="Sign out"></a>
   </div>
   -->
+   
+<%
+	UserService userService = UserServiceFactory.getUserService();
+	if (userService.getCurrentUser() != null) {
+		User user = userService.getCurrentUser();
+		if (user != null) {
+%>
+		  <div id="authenticated" class="login" >
+			<span id="username"><%=request.getUserPrincipal().getName()%></span><br />
+			<a href="<%=userService.createLogoutURL(request.getRequestURI())%>">Logout</a><br />
+		  </div>
+<%
+        }
+	} else {
+%>
+		  <div id="notAuthenticated" class="login" >
+			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login (persist session data)</a><br />
+		  </div>
+<%
+	}
+%> 
+	
 </div>
 </header> 
 
