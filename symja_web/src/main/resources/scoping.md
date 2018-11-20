@@ -68,3 +68,5 @@ It is common to use scoping constructs for function definitions with local varia
 >> 10!
 3628800
 ```
+
+[<< Back](javascript:loadDoc('/index'))

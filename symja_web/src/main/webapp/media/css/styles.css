@@ -228,16 +228,25 @@ div.transparent {
   top: 5px;
   left: 155px;
 }
-
+div.logout {
+  padding-left: 1em;
+}
+div.logout a {
+  text-decoration: none;
+  color: #cccecb;
+}
+div.logout a:hover {
+  color: #3f3f3f;
+}
 div.login {
   padding-left: 1em;
 }
 div.login a {
   text-decoration: none;
-  color: #cccecb;
+  color: #ff0000;
 }
 div.login a:hover {
-  color: #3f3f3f;
+  color: #8b0000;
 }
 
 #username {

@@ -25,3 +25,5 @@ They have to be converted to strings using `ToString` first:
 >> "Debian" <> ToString(6)
 "Debian6"
 ```
+
+[<< Back](javascript:loadDoc('/index'))

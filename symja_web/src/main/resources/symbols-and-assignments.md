@@ -68,3 +68,5 @@ Such a dependency can be achieved by using “delayed assignment” with the `:=
 >> b
 25
 ```
+
+[<< Back](javascript:loadDoc('/index'))

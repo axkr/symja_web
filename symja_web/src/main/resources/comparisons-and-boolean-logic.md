@@ -37,3 +37,5 @@ True
 >> True && (True || False) && False
 False
 ```
+
+[<< Back](javascript:loadDoc('/index'))

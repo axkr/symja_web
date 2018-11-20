@@ -124,3 +124,5 @@ False
 ```
 
 because 3 (an Integer) and 3.0 (a Real) are structurally different.
+
+[<< Back](javascript:loadDoc('/index'))

@@ -187,3 +187,5 @@ Functions can be applied using postfix notation, in addition to using `()`:
 >> 3 // h
 9
 ```
+
+[<< Back](javascript:loadDoc('/index'))

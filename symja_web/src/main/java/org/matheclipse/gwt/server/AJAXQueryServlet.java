@@ -55,7 +55,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 public class AJAXQueryServlet extends HttpServlet {
 
 	private final static int HALF_MEGA = 1024 * 500;
-	
+
 	private static final String SESSION_ENTITY = "USER_DATA";
 
 	private static final long serialVersionUID = 6265703737413093134L;
@@ -105,7 +105,6 @@ public class AJAXQueryServlet extends HttpServlet {
 				out.println(createJSONErrorString("Input expression to large!"));
 				return;
 			}
-			log.warning("In::" + value);
 
 			String result = evaluate(req, value, numericModeValue, functionValue, 0);
 			out.println(result);
@@ -144,12 +143,14 @@ public class AJAXQueryServlet extends HttpServlet {
 		UserService userService = UserServiceFactory.getUserService();
 		if (userService.isUserLoggedIn()) {
 			User user = userService.getCurrentUser();
+			log.warning("(" + user.getEmail() + ") In::" + expression);
 			engine = new EvalEngine(user.getEmail(), 256, 256, outs, errors, true);
 			if (getEntity(user, engine) == null) {
 				engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 			}
 		} else {
 			// isn't used
+			log.warning("In::" + expression);
 			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 		}
 		engine.setOutListDisabled(false, 100);
@@ -163,7 +164,7 @@ public class AJAXQueryServlet extends HttpServlet {
 				User user = userService.getCurrentUser();
 				if (!putEntity(user, engine)) {
 					// TODO error message
-					return createJSONError("User data limit: "+HALF_MEGA+" bytes exceeded")[1];
+					return createJSONError("User data limit: " + HALF_MEGA + " bytes exceeded")[1];
 				}
 			}
 			// tear down associated ThreadLocal from EvalEngine

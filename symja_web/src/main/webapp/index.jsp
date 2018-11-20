@@ -103,7 +103,7 @@
 		User user = userService.getCurrentUser();
 		if (user != null) {
 %>
-		  <div id="authenticated" class="login" >
+		  <div id="authenticated" class="logout" >
 			<span id="username"><%=request.getUserPrincipal().getName()%></span><br />
 			<a href="<%=userService.createLogoutURL(request.getRequestURI())%>">Logout</a><br />
 		  </div>
@@ -112,7 +112,7 @@
 	} else {
 %>
 		  <div id="notAuthenticated" class="login" >
-			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login (persist session data)</a><br />
+			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login (and save session data)</a><br />
 		  </div>
 <%
 	}
@@ -134,13 +134,9 @@
 
 <div id="welcomeContainer">  
 <div id="welcome">
-<p><h1>Welcome to Symja!</h1></p>
-<p>Symja is a general-purpose computer algebra system.</p>
-<p>Enter queries and evaluate them by pressing <code>Shift</code> + <code>Return</code>.
-See the <a href="javascript:showGallery()">gallery</a> for some examples or the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.
-<!--<p>Currently, only <a href="http://www.getfirefox.com" target="_blank">Firefox</a> is supported. Install the <a href="http://www.mozilla.org/projects/mathml/fonts/" target="_blank">STIX fonts</a> for optimal display of mathematical content.</p>-->
-<!--<p><small>This box will disappear as soon as you submit your first query.</small></p>-->
-</p>
+<p><h1>Welcome to Symja computer algebra system!</h1></p> 
+<p>Enter queries and evaluate them by pressing <code>Shift</code> + <code>Return</code>.</p>
+<p>See the <a href="javascript:showGallery()">gallery</a> for some examples or the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.</p>
 <p>Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.
 Please contact us on <a href="https://gitter.im/symja_android_library/Lobby">Gitter Chat</a>.</p>
 <div style="position:absolute;right:0;bottom:-2.8em;">

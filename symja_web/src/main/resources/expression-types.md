@@ -101,3 +101,5 @@
 <td align="center"><code>expr[[index]]</code></td>
 <td align="center"><code>{a, b, c, d}[[2]]</code>  gives <code>b</code></td>
 </tr></tbody></table>
+
+[<< Back](javascript:loadDoc('/index'))
