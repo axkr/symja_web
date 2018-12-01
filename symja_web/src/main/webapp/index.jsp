@@ -112,7 +112,7 @@
 	} else {
 %>
 		  <div id="notAuthenticated" class="login" >
-			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login (and save session data)</a><br />
+			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login with Google (Save session data)</a><br />
 		  </div>
 <%
 	}

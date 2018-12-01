@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -94,10 +95,10 @@ public class MathEvaluator {
 			// remember last result in user variable $ans
 			ISymbol ans = F.$s("$ans");
 			try {
-				ans.putDownRule(ISymbol.RuleType.SET, true, ans, lastResult, false);
+				ans.putDownRule(IPatternMatcher.SET, true, ans, lastResult, false);
 			} catch (Exception ex) {
 				// ex.printStackTrace();
-				ans.putDownRule(ISymbol.RuleType.SET, true, ans, F.Null, false);
+				ans.putDownRule(IPatternMatcher.SET, true, ans, F.Null, false);
 			}
 		}
 
