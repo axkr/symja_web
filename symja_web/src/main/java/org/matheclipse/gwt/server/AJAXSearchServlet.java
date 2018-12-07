@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.List;
 
 import javax.cache.Cache;
 import javax.servlet.ServletException;
@@ -13,17 +12,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.simple.JSONArray;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.reflection.system.Names;
-
-import com.github.rjeschke.txtmark.BlockEmitter;
-import com.github.rjeschke.txtmark.Configuration;
-import com.github.rjeschke.txtmark.Configuration.Builder;
-import com.github.rjeschke.txtmark.Processor;
 
 public class AJAXSearchServlet extends HttpServlet {
 
@@ -113,36 +109,42 @@ public class AJAXSearchServlet extends HttpServlet {
 	}
 
 	public static String generateHTMLString(final String markdownStr) {
-		Builder builder = Configuration.builder();
-		BlockEmitter emitter = new BlockEmitter() {
-			public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-				out.append("<pre>");
-				for (final String s : lines) {
-					for (int i = 0; i < s.length(); i++) {
-						final char c = s.charAt(i);
-						switch (c) {
-						case '&':
-							out.append("&amp;");
-							break;
-						case '<':
-							out.append("&lt;");
-							break;
-						case '>':
-							out.append("&gt;");
-							break;
-						default:
-							out.append(c);
-							break;
-						}
-					}
-					out.append('\n');
-				}
-				out.append("</pre>\n");
-			}
 
-		};
-		Configuration config = builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
-		return Processor.process(markdownStr, config);
+		Parser parser = Parser.builder().build();
+		Node document = parser.parse(markdownStr);
+		HtmlRenderer renderer = HtmlRenderer.builder().build();
+		return renderer.render(document);
+
+		// Builder builder = Configuration.builder();
+		// BlockEmitter emitter = new BlockEmitter() {
+		// public void emitBlock(StringBuilder out, List<String> lines, String meta) {
+		// out.append("<pre>");
+		// for (final String s : lines) {
+		// for (int i = 0; i < s.length(); i++) {
+		// final char c = s.charAt(i);
+		// switch (c) {
+		// case '&':
+		// out.append("&amp;");
+		// break;
+		// case '<':
+		// out.append("&lt;");
+		// break;
+		// case '>':
+		// out.append("&gt;");
+		// break;
+		// default:
+		// out.append(c);
+		// break;
+		// }
+		// }
+		// out.append('\n');
+		// }
+		// out.append("</pre>\n");
+		// }
+		//
+		// };
+		// Configuration config = builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
+		// return Processor.process(markdownStr, config);
 	}
 
 	public static void printMarkdown(Appendable out, String symbolName) {
