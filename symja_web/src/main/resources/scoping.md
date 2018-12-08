@@ -22,6 +22,7 @@ Block({vars}, expr)
 > temporarily stores the definitions of certain variables, evaluates `expr` with reset values and restores the original definitions afterwards.
 
 Both scoping constructs shield inner variables from affecting outer ones:
+
 ```
 >> t = 3
 3
@@ -37,6 +38,7 @@ Both scoping constructs shield inner variables from affecting outer ones:
 ```
 
 `Module` creates new variables:
+
 ```
 >> y = x ^ 3;
 >> Module({x = 2}, x * y)
@@ -44,12 +46,14 @@ Both scoping constructs shield inner variables from affecting outer ones:
 ```
 
 `Block` does not:
+
 ```
 >> Block({x = 2}, x * y)
 16
 ```
 
 Thus, `Block` can be used to temporarily assign a value to a variable:
+
 ```
 >> expr = x ^ 2 + x;
 >> Block({x = 3}, expr)
@@ -60,6 +64,7 @@ x
 ```
 
 It is common to use scoping constructs for function definitions with local variables:
+
 ```
 >> fac(n_) := Module({k, p}, p = 1; For(k = 1, k <= n, ++k, p *= k); p)
 >> fac(10)
