@@ -2,15 +2,19 @@
 
 **Note**: this repository requires **Java 8**. 
 
-Use Symja online
+This repository contains the sources for the [Symja Google Appengine web interface](http://matheclipse.org/). 
 
-* [Symja Appengine web interface](http://symjaweb.appspot.com/)  
+The [Symja Project](https://github.com/axkr/symja_android_library) is a Java computer algebra and symbolic math library.  
+
+With [Apache Maven](https://en.wikipedia.org/wiki/Apache_Maven) installed you can da a `mvn clean package` to create a `matheclipse-web-X.X.X-SNAPSHOT.war`.
+This [WAR file](https://en.wikipedia.org/wiki/WAR_(file_format)) can then be [deployed to a Google Appengine project space](https://cloud.google.com/eclipse/docs/deploying).
 
 Related links:
-
-* [Symja Project](https://github.com/axkr/symja_android_library)  
+ 
 * [Quickstart for Java 8 for App Engine Standard Environment](https://cloud.google.com/appengine/docs/standard/java/quickstart-java8)
-* [Using Apache Maven and the App Engine Plugin (App Engine SDK-based) ](https://cloud.google.com/appengine/docs/standard/java/tools/maven)
+* [Using Apache Maven and the App Engine Plugin (App Engine SDK-based)](https://cloud.google.com/appengine/docs/standard/java/tools/maven)
+* [Deploy App Engine Standardapplication with Eclipse](https://cloud.google.com/eclipse/docs/deploying)
+* [Symja Project](https://github.com/axkr/symja_android_library) 
 
 ### Contact
 
