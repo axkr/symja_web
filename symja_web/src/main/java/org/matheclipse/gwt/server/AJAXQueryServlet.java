@@ -51,18 +51,19 @@ import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
+	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;
 
 	private static final String SESSION_ENTITY = "USER_DATA";
-
+ 
 	private static final long serialVersionUID = 6265703737413093134L;
 
 	private static final Logger log = Logger.getLogger(AJAXQueryServlet.class.getName());
-
-	// public static int APPLET_NUMBER = 1;
 
 	public static final String UTF8 = "utf-8";
 
@@ -158,7 +159,15 @@ public class AJAXQueryServlet extends HttpServlet {
 		EvalEngine.set(engine);
 		String[] result = null;
 		try {
-			result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+			if (!userService.isUserLoggedIn()) {  
+				result = INPUT_CACHE.getIfPresent(expression);
+				if (result == null) {
+					result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+					INPUT_CACHE.put(expression, result);
+				}
+			} else {
+				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+			}
 		} finally {
 			if (userService.isUserLoggedIn()) {
 				User user = userService.getCurrentUser();
