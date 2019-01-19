@@ -16,6 +16,12 @@ Related links:
 * [Deploy App Engine Standard Application with Eclipse](https://cloud.google.com/eclipse/docs/deploying)
 * [Symja Project](https://github.com/axkr/symja_android_library) 
 
+### Quick start 
+
+Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language. We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
+
+[![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ### Contact
 
 If you have any questions about using or developing for this project, send me an [email][1]!
