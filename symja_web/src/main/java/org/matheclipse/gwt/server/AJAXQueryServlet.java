@@ -12,7 +12,6 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -25,7 +24,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.LastCalculationsHistory;
+//import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.expression.Context;
@@ -45,9 +44,9 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.memcache.ErrorHandlers;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
+//import com.google.appengine.api.memcache.ErrorHandlers;
+//import com.google.appengine.api.memcache.MemcacheService;
+//import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -60,7 +59,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	private final static int HALF_MEGA = 1024 * 500;
 
 	private static final String SESSION_ENTITY = "USER_DATA";
- 
+
 	private static final long serialVersionUID = 6265703737413093134L;
 
 	private static final Logger log = Logger.getLogger(AJAXQueryServlet.class.getName());
@@ -146,20 +145,22 @@ public class AJAXQueryServlet extends HttpServlet {
 			User user = userService.getCurrentUser();
 			log.warning("(" + user.getEmail() + ") In::" + expression);
 			engine = new EvalEngine(user.getEmail(), 256, 256, outs, errors, true);
+			EvalEngine.set(engine);
 			if (getEntity(user, engine) == null) {
 				engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
+				EvalEngine.set(engine);
 			}
 		} else {
 			// isn't used
 			log.warning("In::" + expression);
 			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
+			EvalEngine.set(engine);
 		}
 		engine.setOutListDisabled(false, 100);
 		engine.setPackageMode(false);
-		EvalEngine.set(engine);
 		String[] result = null;
 		try {
-			if (!userService.isUserLoggedIn()) {  
+			if (!userService.isUserLoggedIn()) {
 				result = INPUT_CACHE.getIfPresent(expression);
 				if (result == null) {
 					result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
@@ -186,18 +187,18 @@ public class AJAXQueryServlet extends HttpServlet {
 	}
 
 	private static EvalEngine getEntity(User user, EvalEngine engine) {
-		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
-		syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
-
-		Context context = (Context) syncCache.get(user.getUserId() + "_c");
-		if (context != null) {
-			engine.getContextPath().setGlobalContext(context);
-			LastCalculationsHistory lch = (LastCalculationsHistory) syncCache.get(user.getUserId() + "_h");
-			if (lch != null) {
-				engine.setOutListDisabled(lch);
-			}
-			return engine;
-		}
+		// MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		// syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+		//
+		// Context context = (Context) syncCache.get(user.getUserId() + "_c");
+		// if (context != null) {
+		// engine.getContextPath().setGlobalContext(context);
+		// LastCalculationsHistory lch = (LastCalculationsHistory) syncCache.get(user.getUserId() + "_h");
+		// if (lch != null) {
+		// engine.setOutListDisabled(lch);
+		// }
+		// return engine;
+		// }
 
 		Key pageKey = KeyFactory.createKey(SESSION_ENTITY, user.getUserId());
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -208,27 +209,24 @@ public class AJAXQueryServlet extends HttpServlet {
 			ByteArrayInputStream bais = new ByteArrayInputStream(((Blob) entity.getProperty("context")).getBytes());
 			ObjectInputStream ois = new ObjectInputStream(bais);
 			Context c = (Context) ois.readObject();
-			if (context != null) {
+			if (c != null) {
 				engine.getContextPath().setGlobalContext(c);
 			}
 			ois.close();
 			bais.close();
 
-			bais = new ByteArrayInputStream(((Blob) entity.getProperty("history")).getBytes());
-			ois = new ObjectInputStream(bais);
-			LastCalculationsHistory lch = (LastCalculationsHistory) ois.readObject();
-			if (lch != null) {
-				engine.setOutListDisabled(lch);
-			}
-			ois.close();
-			bais.close();
+			// bais = new ByteArrayInputStream(((Blob) entity.getProperty("history")).getBytes());
+			// ois = new ObjectInputStream(bais);
+			// LastCalculationsHistory lch = (LastCalculationsHistory) ois.readObject();
+			// if (lch != null) {
+			// engine.setOutListDisabled(lch);
+			// }
+			// ois.close();
+			// bais.close();
 
-		} catch (IOException e1) {
-
-		} catch (ClassNotFoundException e1) {
-
-		} catch (EntityNotFoundException e2) {
-
+		} catch (Exception rex) {
+//			rex.printStackTrace();
+			log.warning("getEntity::ioexception 1");
 		}
 		return engine;
 	}
@@ -249,30 +247,33 @@ public class AJAXQueryServlet extends HttpServlet {
 			}
 			oos.close();
 			baos.close();
-		} catch (IOException ioexception) {
-
+		} catch (Exception ex) {
+//			ex.printStackTrace();
+			log.warning("putEntity::ioexception 1");
+			return false;
 		}
 
-		Serializable history = (Serializable) engine.getOutList();
-		baos = new ByteArrayOutputStream();
-		try {
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(history);
-			if (baos.size() < HALF_MEGA) {
-				page.setProperty("history", new Blob(baos.toByteArray()));
-			} else {
-				return false;
-			}
-			oos.close();
-			baos.close();
-		} catch (IOException ioexception) {
+//		Serializable history = (Serializable) engine.getOutList();
+//		baos = new ByteArrayOutputStream();
+//		try {
+//			ObjectOutputStream oos = new ObjectOutputStream(baos);
+//			oos.writeObject(history);
+//			if (baos.size() < HALF_MEGA) {
+//				page.setProperty("history", new Blob(baos.toByteArray()));
+//			} else {
+//				return false;
+//			}
+//			oos.close();
+//			baos.close();
+//		} catch (IOException ioexception) {
+//			log.warning("putEntity::ioexception 2");
+//			return false;
+//		}
 
-		}
-
-		MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
-		syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
-		syncCache.put(user.getUserId() + "_c", context);
-		syncCache.put(user.getUserId() + "_h", history);
+		// MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
+		// syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+		// syncCache.put(user.getUserId() + "_c", context);
+		// syncCache.put(user.getUserId() + "_h", history);
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		datastore.put(page);
 		return stored;
