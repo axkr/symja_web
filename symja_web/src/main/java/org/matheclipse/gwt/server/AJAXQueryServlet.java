@@ -131,43 +131,49 @@ public class AJAXQueryServlet extends HttpServlet {
 			return createJSONErrorString("Input expression greater than: " + Short.MAX_VALUE + " characters!");
 		}
 
-		final StringWriter outWriter = new StringWriter();
-		WriterOutputStream wouts = new WriterOutputStream(outWriter);
-		PrintStream outs = new PrintStream(wouts);
-
-		final StringWriter errorWriter = new StringWriter();
-		WriterOutputStream werrors = new WriterOutputStream(errorWriter);
-		PrintStream errors = new PrintStream(werrors);
-
 		EvalEngine engine = null;
+		String[] result = null;
+		PrintStream outs = null;
+		PrintStream errors = null;
 		UserService userService = UserServiceFactory.getUserService();
-		if (userService.isUserLoggedIn()) {
-			User user = userService.getCurrentUser();
-			log.warning("(" + user.getEmail() + ") In::" + expression);
-			engine = new EvalEngine(user.getEmail(), 256, 256, outs, errors, true);
-			EvalEngine.set(engine);
-			if (getEntity(user, engine) == null) {
+		try {
+			if (userService.isUserLoggedIn()) {
+				final StringWriter outWriter = new StringWriter();
+				WriterOutputStream wouts = new WriterOutputStream(outWriter);
+				outs = new PrintStream(wouts);
+				final StringWriter errorWriter = new StringWriter();
+				WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+				errors = new PrintStream(werrors);
+				User user = userService.getCurrentUser();
+				log.warning("(" + user.getEmail() + ") In::" + expression);
+				engine = new EvalEngine(user.getEmail(), 256, 256, outs, errors, true);
+				EvalEngine.set(engine);
+				if (getEntity(user, engine) == null) {
+					engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
+					EvalEngine.set(engine);
+				}
+				engine.setOutListDisabled(false, 100);
+				engine.setPackageMode(false);
+				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+			} else {
+				// isn't used
+				log.warning("In::" + expression);
+				result = INPUT_CACHE.getIfPresent(expression);
+				if (result != null) {
+					return result[1].toString();
+				}
+				final StringWriter outWriter = new StringWriter();
+				WriterOutputStream wouts = new WriterOutputStream(outWriter);
+				outs = new PrintStream(wouts);
+				final StringWriter errorWriter = new StringWriter();
+				WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+				errors = new PrintStream(werrors);
 				engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
 				EvalEngine.set(engine);
-			}
-		} else {
-			// isn't used
-			log.warning("In::" + expression);
-			engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
-			EvalEngine.set(engine);
-		}
-		engine.setOutListDisabled(false, 100);
-		engine.setPackageMode(false);
-		String[] result = null;
-		try {
-			if (!userService.isUserLoggedIn()) {
-				result = INPUT_CACHE.getIfPresent(expression);
-				if (result == null) {
-					result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
-					INPUT_CACHE.put(expression, result);
-				}
-			} else {
+				engine.setOutListDisabled(false, 100);
+				engine.setPackageMode(false);
 				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
+				INPUT_CACHE.put(expression, result);
 			}
 		} finally {
 			if (userService.isUserLoggedIn()) {
@@ -176,6 +182,12 @@ public class AJAXQueryServlet extends HttpServlet {
 					// TODO error message
 					return createJSONError("User data limit: " + HALF_MEGA + " bytes exceeded")[1];
 				}
+			}
+			if (outs != null) {
+				outs.close();
+			}
+			if (errors != null) {
+				errors.close();
 			}
 			// tear down associated ThreadLocal from EvalEngine
 			EvalEngine.remove();
@@ -225,7 +237,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			// bais.close();
 
 		} catch (Exception rex) {
-//			rex.printStackTrace();
+			// rex.printStackTrace();
 			log.warning("getEntity::ioexception 1");
 		}
 		return engine;
@@ -248,27 +260,27 @@ public class AJAXQueryServlet extends HttpServlet {
 			oos.close();
 			baos.close();
 		} catch (Exception ex) {
-//			ex.printStackTrace();
+			// ex.printStackTrace();
 			log.warning("putEntity::ioexception 1");
 			return false;
 		}
 
-//		Serializable history = (Serializable) engine.getOutList();
-//		baos = new ByteArrayOutputStream();
-//		try {
-//			ObjectOutputStream oos = new ObjectOutputStream(baos);
-//			oos.writeObject(history);
-//			if (baos.size() < HALF_MEGA) {
-//				page.setProperty("history", new Blob(baos.toByteArray()));
-//			} else {
-//				return false;
-//			}
-//			oos.close();
-//			baos.close();
-//		} catch (IOException ioexception) {
-//			log.warning("putEntity::ioexception 2");
-//			return false;
-//		}
+		// Serializable history = (Serializable) engine.getOutList();
+		// baos = new ByteArrayOutputStream();
+		// try {
+		// ObjectOutputStream oos = new ObjectOutputStream(baos);
+		// oos.writeObject(history);
+		// if (baos.size() < HALF_MEGA) {
+		// page.setProperty("history", new Blob(baos.toByteArray()));
+		// } else {
+		// return false;
+		// }
+		// oos.close();
+		// baos.close();
+		// } catch (IOException ioexception) {
+		// log.warning("putEntity::ioexception 2");
+		// return false;
+		// }
 
 		// MemcacheService syncCache = MemcacheServiceFactory.getMemcacheService();
 		// syncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
