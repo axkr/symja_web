@@ -747,7 +747,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
-		Config.JAS_NO_THREADS = true;
+//		Config.JAS_NO_THREADS = true;
 		AJAXQueryServlet.log.info("AJAXQueryServlet initialized");
 	}
 }
