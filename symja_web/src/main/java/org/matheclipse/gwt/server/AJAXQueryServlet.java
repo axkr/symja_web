@@ -41,7 +41,6 @@ import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 //import com.google.appengine.api.memcache.ErrorHandlers;
@@ -156,12 +155,11 @@ public class AJAXQueryServlet extends HttpServlet {
 				engine.setPackageMode(false);
 				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
 			} else {
-				// isn't used
-				log.warning("In::" + expression);
 				result = INPUT_CACHE.getIfPresent(expression);
 				if (result != null) {
 					return result[1].toString();
 				}
+				log.warning("In::" + expression);
 				final StringWriter outWriter = new StringWriter();
 				WriterOutputStream wouts = new WriterOutputStream(outWriter);
 				outs = new PrintStream(wouts);
@@ -741,13 +739,14 @@ public class AJAXQueryServlet extends HttpServlet {
 		AJAXQueryServlet.INITIALIZED = true;
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+		Config.MATHML_TRIG_LOWERCASE = false;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
 
 		F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
-//		Config.JAS_NO_THREADS = true;
+		// Config.JAS_NO_THREADS = true;
 		AJAXQueryServlet.log.info("AJAXQueryServlet initialized");
 	}
 }

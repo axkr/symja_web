@@ -17,9 +17,9 @@ import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.reflection.system.Names;
 
 public class AJAXSearchServlet extends HttpServlet {
 
@@ -86,7 +86,7 @@ public class AJAXSearchServlet extends HttpServlet {
 
 	private static void findDocumentation(Appendable out, String trimmedInput) {
 		String name = trimmedInput;// .substring(1);
-		IAST list = Names.getNamesByPrefix(name);
+		IAST list = IOFunctions.getNamesByPrefix(name);
 		try {
 			if (list.size() != 2) {
 				for (int i = 1; i < list.size(); i++) {
