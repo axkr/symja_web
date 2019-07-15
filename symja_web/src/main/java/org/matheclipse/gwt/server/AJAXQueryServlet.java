@@ -23,6 +23,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalEngine;
 //import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -53,6 +55,22 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
+	protected final static String MATHCELL_PAGE = //
+			//		"<div class=\"mathcell\" style=\"height: 4in\">\n" + //
+					"<script>\n" + //
+					"\n" + //
+					"var parent = document.getElementById(\"mathcell\");\n" + //
+					"\n" + //
+					"var id = generateId();\n" + //
+					"parent.id = id;\n" + //
+					"\n" + //
+					"`1`\n" + //
+					"\n" + //
+					"parent.update( id );\n" + //
+					"\n" + //
+					"</script>\n"; //
+				//	"</div>\n";//
+	
 	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;
@@ -392,6 +410,17 @@ public class AJAXQueryServlet extends HttpServlet {
 					if (outExpr.isASTSizeGE(F.Show, 2)) {
 						IAST show = (IAST) outExpr;
 						return createJSONShow(engine, show);
+					} else if (outExpr.isAST(F.JSFormData, 3) && outExpr.second().toString().equals("mathcell")) {
+						try {
+							String manipulateStr = ((IAST) outExpr).arg1().toString();
+							String html = MATHCELL_PAGE;
+							html = html.replaceAll("`1`", manipulateStr);
+							return createJSONJavaScript(html);
+						} catch (Exception ex) {
+							if (Config.SHOW_STACKTRACE) {
+								ex.printStackTrace();
+							}
+						}
 					}
 					return createJSONResult(engine, outExpr, outWriter, errorWriter);
 				}
@@ -511,6 +540,43 @@ public class AJAXQueryServlet extends HttpServlet {
 		json.put("results", temp);
 
 		return new String[] { "mathml", JSONValue.toJSONString(json) };
+	}
+
+	public static String[] createJSONJavaScript(String script) throws IOException {
+ 
+		JSONArray temp;
+
+		JSONObject resultsJSON = new JSONObject();
+		resultsJSON.put("line", new Integer(21));
+		resultsJSON.put("result", script);
+		temp = new JSONArray();
+		 
+ 
+		resultsJSON.put("out", temp);
+
+		temp = new JSONArray();
+		temp.add(resultsJSON);
+		JSONObject json = new JSONObject();
+		json.put("results", temp);
+ 
+		return new String[] { "mathml", JSONValue.toJSONString(json) };
+		
+//		StringBuilder stw = new StringBuilder();
+//		stw.append(script);
+//		JSONArray temp;
+//		JSONObject resultsJSON = new JSONObject();
+//		resultsJSON.put("line", new Integer(21));
+//		resultsJSON.put("result", stw.toString());
+//		temp = new JSONArray();
+//		
+//		resultsJSON.put("out", temp);
+//
+//		temp = new JSONArray();
+//		temp.add(resultsJSON);
+//		JSONObject json = new JSONObject();
+//		json.put("results", temp);
+//
+//		return new String[] { "mathml", JSONValue.toJSONString(json) };
 	}
 
 	public static String[] createJSONError(String str) {
@@ -731,12 +797,14 @@ public class AJAXQueryServlet extends HttpServlet {
 	public void init() throws ServletException {
 		super.init();
 		if (!INITIALIZED) {
-			AJAXQueryServlet.initialization();
+			AJAXQueryServlet.initialization("AJAXQueryServlet");
 		}
 	}
 
-	public synchronized static void initialization() {
+	public synchronized static void initialization(String servlet) {
 		AJAXQueryServlet.INITIALIZED = true;
+		ToggleFeature.COMPILE = false;
+		Config.USE_MATHCELL = true;
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
@@ -747,6 +815,6 @@ public class AJAXQueryServlet extends HttpServlet {
 		F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
 		// F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
 		// Config.JAS_NO_THREADS = true;
-		AJAXQueryServlet.log.info("AJAXQueryServlet initialized");
+		AJAXQueryServlet.log.info(servlet + "initialized");
 	}
 }

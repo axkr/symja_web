@@ -4,7 +4,6 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-
 	<servlet>
 		<servlet-name>calc</servlet-name>
 		<servlet-class>org.matheclipse.gwt.server.EvaluateServlet</servlet-class>
@@ -30,7 +29,7 @@
 		<servlet-name>cronkeepalive</servlet-name>
 		<servlet-class>org.matheclipse.gwt.server.CronKeepaliveServlet</servlet-class>
 	</servlet>
-
+ 
 	<servlet-mapping>
 		<servlet-name>calc</servlet-name>
 		<url-pattern>/calc</url-pattern>
@@ -58,7 +57,7 @@
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 
 </web-app>

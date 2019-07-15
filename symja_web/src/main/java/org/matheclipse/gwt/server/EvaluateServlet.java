@@ -453,7 +453,7 @@ public class EvaluateServlet extends HttpServlet {
 	public void init() throws ServletException {
 		super.init();
 		if (!AJAXQueryServlet.INITIALIZED) {
-			AJAXQueryServlet.initialization();
+			AJAXQueryServlet.initialization("EvaluateServlet");
 		}
 		// if (USE_MEMCACHE) {
 		// if (cache == null) {

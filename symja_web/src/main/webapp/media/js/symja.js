@@ -297,6 +297,13 @@ function createLine(value) {
 		var dom = document.createElement('div');
 		dom.updateDOM(value);
 		return translateDOMElement(dom.childNodes[0]);
+	} else if (value.startsWith('<script')) {
+		var dom = document.createElement('div');
+		dom.updateDOM(value); 
+		dom.setAttribute('id', 'mathcell');
+		dom.setAttribute('class', 'mathcell');
+		dom.setAttribute('style', 'width: 600px; height: 400px');
+		return dom; 
 	} else {
 		var lines = value.split('\n');
 		var p = $E('p');
@@ -519,10 +526,11 @@ function createQuery(before, noFocus, updatingAll) {
 	var li = $E('li', {'id': 'query_' + queryIndex++, 'class': 'query'},
 		ul = $E('ul', {'class': 'query'},
 			$E('li', {'class': 'request'},
-				textarea = $E('textarea', {'class': 'request', 'spellcheck': 'false'}),
 				$E('span', {'class': 'submitbutton', 'title': "Submit [Shift+Return]"},
-					submitButton = $E('span', $T('='))
-				)
+							submitButton = $E('span', $T('=')) 
+							//testButton = $E('span', $T('>>'))
+				), 
+				textarea = $E('textarea', {'class': 'request', 'spellcheck': 'false'})
 			)
 		),
 		moveHandle = $E('span', {'class': 'move'}),

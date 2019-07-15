@@ -416,13 +416,13 @@ li.query .submitbutton {
 }
 li.query.focused .submitbutton {
   display: block;
-  position: absolute;
-  right: 10px;
+  position: relative;
+  left: 0;
   top: 0;
 }
 li.query .submitbutton span {
   display: inline-block;
-  margin-top: 3px;
+  margin-top: 0px;
   margin-bottom: 5px;
   /*margin-left: 10px;*/
   background-color: #cccecb;
@@ -432,7 +432,7 @@ li.query .submitbutton span {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   width: 10px;
-  line-height: 10px;
+  line-height: 8px;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
@@ -508,12 +508,13 @@ ul.query li.request {
 }
 
 textarea.request {
+  position: relative;
   width: 99%;
   overflow: hidden;
   border: none;
   line-height: 17px;
   color: navy;
-  margin: 0;
+  margin: 0;  
   font-family: monospace;
   font-size: 1em;
   background: white;
