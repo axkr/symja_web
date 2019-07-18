@@ -300,7 +300,6 @@ function createLine(value) {
 	} else if (value.startsWith('<iframe')) {
 		var dom = document.createElement('div'); 
 		dom.setAttribute('id', 'mathcell');
-		dom.setAttribute('class', 'mathcell');
 		dom.setAttribute('style', 'width: 600px; height: 440px; margin: 0; padding: 0');
 		dom.update(value); 
 		return dom;
