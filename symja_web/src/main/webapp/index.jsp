@@ -42,9 +42,7 @@
 <link rel="stylesheet" type="text/css" href="/media/css/styles_ie.css" />
 <![endif]-->
 
-
-
-<script type="text/javascript" src="/media/js/prototype/prototype.js"></script>
+<script type="text/javascript" src="/media/js/prototype/prototype.js"></script> 
 <script type="text/javascript" src="/media/js/three/Three.js"></script>
 <script type="text/javascript" src="/media/js/three/Detector.js"></script>
 
@@ -136,7 +134,7 @@
 
 <div id="welcomeContainer">  
 <div id="welcome">
-<p><h1>Welcome to Symja computer algebra system!</h1></p> 
+<h1>Welcome to Symja computer algebra system!</h1>
 <p>Enter queries and evaluate them by pressing <code>Shift</code> + <code>Return</code>.</p>
 <p>See the <a href="javascript:showGallery()">gallery</a> for some examples or the <a href="javascript:showDoc()">documentation</a> for a full list of supported functions.</p>
 <p>Symja uses <a href="http://www.mathjax.org/" target="_blank">MathJax</a> to display beautiful math.

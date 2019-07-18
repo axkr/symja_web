@@ -297,13 +297,13 @@ function createLine(value) {
 		var dom = document.createElement('div');
 		dom.updateDOM(value);
 		return translateDOMElement(dom.childNodes[0]);
-	} else if (value.startsWith('<script')) {
-		var dom = document.createElement('div');
-		dom.updateDOM(value); 
+	} else if (value.startsWith('<iframe')) {
+		var dom = document.createElement('div'); 
 		dom.setAttribute('id', 'mathcell');
 		dom.setAttribute('class', 'mathcell');
-		dom.setAttribute('style', 'width: 600px; height: 400px');
-		return dom; 
+		dom.setAttribute('style', 'width: 600px; height: 440px; margin: 0; padding: 0');
+		dom.update(value); 
+		return dom;
 	} else {
 		var lines = value.split('\n');
 		var p = $E('p');

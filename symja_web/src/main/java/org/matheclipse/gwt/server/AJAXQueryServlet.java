@@ -19,12 +19,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalEngine;
 //import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -56,8 +56,8 @@ import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
 	protected final static String MATHCELL_PAGE = //
-			//		"<div class=\"mathcell\" style=\"height: 4in\">\n" + //
-					"<script>\n" + //
+			// "<div class=\"mathcell\" style=\"height: 4in\">\n" + //
+			"<script type=\"text/javascript\">\n" + //
 					"\n" + //
 					"var parent = document.getElementById(\"mathcell\");\n" + //
 					"\n" + //
@@ -69,8 +69,49 @@ public class AJAXQueryServlet extends HttpServlet {
 					"parent.update( id );\n" + //
 					"\n" + //
 					"</script>\n"; //
-				//	"</div>\n";//
-	
+	// "</div>\n";//
+
+	protected final static String MATHCELL_IFRAME = //
+			// "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>MathCell</title>\n" + //
+					"</head>\n" + //
+					"\n" + //
+					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
+					"\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
+					+ //
+					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
+					+ //
+					"\n" + //
+					"<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; ; margin: 0; padding: 0; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script>\n" + //
+					"\n" + //
+					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"\n" + //
+					"var id = generateId();\n" + //
+					"parent.id = id;\n" + //
+					"\n" + //
+					"`1`\n" + //
+					"\n" + //
+					"parent.update( id );\n" + //
+					"\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"\n" + //
+					"</body>\n" + //
+					"</html>";//
+
 	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;
@@ -413,9 +454,11 @@ public class AJAXQueryServlet extends HttpServlet {
 					} else if (outExpr.isAST(F.JSFormData, 3) && outExpr.second().toString().equals("mathcell")) {
 						try {
 							String manipulateStr = ((IAST) outExpr).arg1().toString();
-							String html = MATHCELL_PAGE;
+							String html = MATHCELL_IFRAME;
 							html = html.replaceAll("`1`", manipulateStr);
-							return createJSONJavaScript(html);
+							html = StringEscapeUtils.escapeHtml4(html);
+							return createJSONJavaScript("<iframe srcdoc=\"" + html
+									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						} catch (Exception ex) {
 							if (Config.SHOW_STACKTRACE) {
 								ex.printStackTrace();
@@ -543,40 +586,21 @@ public class AJAXQueryServlet extends HttpServlet {
 	}
 
 	public static String[] createJSONJavaScript(String script) throws IOException {
- 
-		JSONArray temp;
 
+		JSONArray temp;
 		JSONObject resultsJSON = new JSONObject();
 		resultsJSON.put("line", new Integer(21));
 		resultsJSON.put("result", script);
+
 		temp = new JSONArray();
-		 
- 
 		resultsJSON.put("out", temp);
 
 		temp = new JSONArray();
 		temp.add(resultsJSON);
 		JSONObject json = new JSONObject();
 		json.put("results", temp);
- 
+
 		return new String[] { "mathml", JSONValue.toJSONString(json) };
-		
-//		StringBuilder stw = new StringBuilder();
-//		stw.append(script);
-//		JSONArray temp;
-//		JSONObject resultsJSON = new JSONObject();
-//		resultsJSON.put("line", new Integer(21));
-//		resultsJSON.put("result", stw.toString());
-//		temp = new JSONArray();
-//		
-//		resultsJSON.put("out", temp);
-//
-//		temp = new JSONArray();
-//		temp.add(resultsJSON);
-//		JSONObject json = new JSONObject();
-//		json.put("results", temp);
-//
-//		return new String[] { "mathml", JSONValue.toJSONString(json) };
 	}
 
 	public static String[] createJSONError(String str) {
