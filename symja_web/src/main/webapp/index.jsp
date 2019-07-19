@@ -66,8 +66,6 @@
 <script type="text/javascript" src="/media/js/scriptaculous/sound.js"></script>
 <!--<script type="text/javascript" src="/media/js/scriptaculous/scriptaculous.js"></script>-->
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js"></script>
-
 </head>
 
 <body>
