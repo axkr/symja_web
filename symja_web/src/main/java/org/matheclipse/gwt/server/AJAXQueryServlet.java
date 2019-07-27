@@ -25,6 +25,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
+import org.matheclipse.core.builtin.GraphFunctions;
+import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalEngine;
 //import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -34,6 +36,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
@@ -55,8 +58,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
+
 	protected final static String MATHCELL_PAGE = //
-			// "<div class=\"mathcell\" style=\"height: 4in\">\n" + //
 			"<script type=\"text/javascript\">\n" + //
 					"\n" + //
 					"var parent = document.getElementById(\"mathcell\");\n" + //
@@ -69,7 +72,6 @@ public class AJAXQueryServlet extends HttpServlet {
 					"parent.update( id );\n" + //
 					"\n" + //
 					"</script>\n"; //
-	// "</div>\n";//
 
 	protected final static String MATHCELL_IFRAME = //
 			// "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
@@ -89,7 +91,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.2/build/math.js\"></script>\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n" 
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.7.0/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
@@ -112,7 +114,39 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"</body>\n" + //
 					"</html>";//
-
+	protected final static String VISJS_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>VIS-NetWork</title>\n" + //
+					"\n" + //
+					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@5.0.0/dist/vis-network.min.js\"></script>\n"
+					+ //
+					"</head>\n" + //
+					"<body>\n" + //
+					"\n" + // 
+					"<div id=\"vis\" style=\"width: 600px; height: 400px; ; margin: 0; padding: 0; flex-direction: column; overflow: hidden\">\n"
+					  + //
+					"<script type=\"text/javascript\">\n" + //
+					"`1`\n" + // 
+					"  var container = document.getElementById('vis');\n" + //
+					"  var data = {\n" + //
+					"    nodes: nodes,\n" + //
+					"    edges: edges\n" + //
+					"  };\n" + //
+					"  var options = {};\n" + //
+					"  var network = new vis.Network(container, data, options);\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
+					"</body>\n" + //
+					"</html>";//
 	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;
@@ -452,6 +486,15 @@ public class AJAXQueryServlet extends HttpServlet {
 					if (outExpr.isASTSizeGE(F.Show, 2)) {
 						IAST show = (IAST) outExpr;
 						return createJSONShow(engine, show);
+					} else if (outExpr.head().equals(F.Graph) && outExpr instanceof IDataExpr) {
+						String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) outExpr);
+						if (javaScriptStr != null) {
+							String html = VISJS_IFRAME;
+							html = html.replaceAll("`1`", javaScriptStr);
+							html = StringEscapeUtils.escapeHtml4(html);
+							return createJSONJavaScript("<iframe srcdoc=\"" + html
+									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+						}
 					} else if (outExpr.isAST(F.JSFormData, 3) && outExpr.second().toString().equals("mathcell")) {
 						try {
 							String manipulateStr = ((IAST) outExpr).arg1().toString();
