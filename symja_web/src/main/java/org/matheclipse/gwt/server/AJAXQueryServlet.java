@@ -26,7 +26,6 @@ import org.json.simple.JSONValue;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
-import org.matheclipse.core.eval.Console;
 import org.matheclipse.core.eval.EvalEngine;
 //import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -96,7 +95,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
 					"\n" + //
-					"<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; ; margin: 0; padding: 0; flex-direction: column; overflow: hidden\">\n"
+					"<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
 					+ //
 					"<script>\n" + //
 					"\n" + //
@@ -114,6 +113,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"</body>\n" + //
 					"</html>";//
+
 	protected final static String VISJS_IFRAME = //
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
 					"\n" + //
@@ -131,11 +131,11 @@ public class AJAXQueryServlet extends HttpServlet {
 					+ //
 					"</head>\n" + //
 					"<body>\n" + //
-					"\n" + // 
-					"<div id=\"vis\" style=\"width: 600px; height: 400px; ; margin: 0; padding: 0; flex-direction: column; overflow: hidden\">\n"
-					  + //
+					"\n" + //
+					"<div id=\"vis\" style=\"width: 600px; height: 400px; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
+					+ //
 					"<script type=\"text/javascript\">\n" + //
-					"`1`\n" + // 
+					"`1`\n" + //
 					"  var container = document.getElementById('vis');\n" + //
 					"  var data = {\n" + //
 					"    nodes: nodes,\n" + //
@@ -147,6 +147,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"</div>\n" + //
 					"</body>\n" + //
 					"</html>";//
+
 	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;

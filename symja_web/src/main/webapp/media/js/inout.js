@@ -208,7 +208,7 @@ function showGallery() {
 	  '1 + 2 - x*3*x / y',
 	  'Sin(Pi)',
 	  'Cos(30*Degree)',
-	  'Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi}), {a,0,10})',  
+	  'Manipulate(Plot(Sin(x)*Cos(1 + a*x), {x, 0, 2*Pi},PlotRange->{-1,1}), {a,0,10})',  
 	  'Graph({1,2,3,4,6,5,7,8},{1->2,1->3,1->4,2->6,5->3,5->7,5->8})',  
 	  'N(E, 30)',
 	  'D(Sin(2*x) + Log(x) ^ 2, x)',	  
