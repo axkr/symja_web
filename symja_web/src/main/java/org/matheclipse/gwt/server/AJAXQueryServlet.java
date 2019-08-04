@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
@@ -30,6 +31,8 @@ import org.matheclipse.core.eval.EvalEngine;
 //import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
@@ -45,6 +48,7 @@ import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 //import com.google.appengine.api.memcache.ErrorHandlers;
@@ -53,8 +57,6 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 public class AJAXQueryServlet extends HttpServlet {
 
@@ -148,11 +150,13 @@ public class AJAXQueryServlet extends HttpServlet {
 					"</body>\n" + //
 					"</html>";//
 
-	public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
+	// public final static Cache<String, String[]> INPUT_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
 
 	private final static int HALF_MEGA = 1024 * 500;
 
-	private static final String SESSION_ENTITY = "USER_DATA";
+	private static final String USER_DATA_ENTITY = "USER_DATA";
+
+	private static final String SESSION_DATA_ENTITY = "SESSION_DATA";
 
 	private static final long serialVersionUID = 6265703737413093134L;
 
@@ -230,6 +234,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		PrintStream outs = null;
 		PrintStream errors = null;
 		UserService userService = UserServiceFactory.getUserService();
+		HttpSession session = request.getSession();
 		try {
 			if (userService.isUserLoggedIn()) {
 				final StringWriter outWriter = new StringWriter();
@@ -250,23 +255,27 @@ public class AJAXQueryServlet extends HttpServlet {
 				engine.setPackageMode(false);
 				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
 			} else {
-				result = INPUT_CACHE.getIfPresent(expression);
-				if (result != null) {
-					return result[1].toString();
-				}
-				log.warning("In::" + expression);
+				// result = INPUT_CACHE.getIfPresent(expression);
+				// if (result != null) {
+				// return result[1].toString();
+				// }
+				log.warning("(" + session.getId() + ") In::" + expression);
 				final StringWriter outWriter = new StringWriter();
 				WriterOutputStream wouts = new WriterOutputStream(outWriter);
 				outs = new PrintStream(wouts);
 				final StringWriter errorWriter = new StringWriter();
 				WriterOutputStream werrors = new WriterOutputStream(errorWriter);
 				errors = new PrintStream(werrors);
-				engine = new EvalEngine("no-session", 256, 256, outs, errors, true);
+				engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
 				EvalEngine.set(engine);
+				if (getEntity(session, engine) == null) {
+					engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
+					EvalEngine.set(engine);
+				}
 				engine.setOutListDisabled(false, 100);
 				engine.setPackageMode(false);
 				result = evaluateString(engine, expression, numericMode, function, outWriter, errorWriter);
-				INPUT_CACHE.put(expression, result);
+				// INPUT_CACHE.put(expression, result);
 			}
 		} finally {
 			if (userService.isUserLoggedIn()) {
@@ -274,6 +283,11 @@ public class AJAXQueryServlet extends HttpServlet {
 				if (!putEntity(user, engine)) {
 					// TODO error message
 					return createJSONError("User data limit: " + HALF_MEGA + " bytes exceeded")[1];
+				}
+			} else {
+				if (!putEntity(session, engine)) {
+					// TODO error message
+					return createJSONError("Session data limit: " + HALF_MEGA + " bytes exceeded")[1];
 				}
 			}
 			if (outs != null) {
@@ -305,7 +319,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		// return engine;
 		// }
 
-		Key pageKey = KeyFactory.createKey(SESSION_ENTITY, user.getUserId());
+		Key pageKey = KeyFactory.createKey(USER_DATA_ENTITY, user.getUserId());
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Entity entity;
 
@@ -328,7 +342,8 @@ public class AJAXQueryServlet extends HttpServlet {
 			// }
 			// ois.close();
 			// bais.close();
-
+		} catch (EntityNotFoundException nefe) {
+			//
 		} catch (Exception rex) {
 			// rex.printStackTrace();
 			log.warning("getEntity::ioexception 1");
@@ -336,8 +351,34 @@ public class AJAXQueryServlet extends HttpServlet {
 		return engine;
 	}
 
+	private static EvalEngine getEntity(HttpSession session, EvalEngine engine) {
+		if (session != null) {
+			Key pageKey = KeyFactory.createKey(SESSION_DATA_ENTITY, session.getId());
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			Entity entity;
+
+			try {
+				entity = datastore.get(pageKey);
+				ByteArrayInputStream bais = new ByteArrayInputStream(((Blob) entity.getProperty("context")).getBytes());
+				ObjectInputStream ois = new ObjectInputStream(bais);
+				Context c = (Context) ois.readObject();
+				if (c != null) {
+					engine.getContextPath().setGlobalContext(c);
+				}
+				ois.close();
+				bais.close();
+			} catch (EntityNotFoundException nefe) {
+				//
+			} catch (Exception rex) {
+				rex.printStackTrace();
+				log.warning("getEntity::ioexception 2");
+			}
+		}
+		return engine;
+	}
+
 	private static boolean putEntity(User user, EvalEngine engine) {
-		Entity page = new Entity(SESSION_ENTITY, user.getUserId());
+		Entity page = new Entity(USER_DATA_ENTITY, user.getUserId());
 		page.setProperty("creator", user);
 		Serializable context = (Serializable) engine.getContextPath().getGlobalContext();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -354,7 +395,7 @@ public class AJAXQueryServlet extends HttpServlet {
 			baos.close();
 		} catch (Exception ex) {
 			// ex.printStackTrace();
-			log.warning("putEntity::ioexception 1");
+			log.warning("putEntity::ioexception 3");
 			return false;
 		}
 
@@ -382,6 +423,36 @@ public class AJAXQueryServlet extends HttpServlet {
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		datastore.put(page);
 		return stored;
+	}
+
+	private static boolean putEntity(HttpSession session, EvalEngine engine) {
+		if (session != null) {
+			Entity page = new Entity(SESSION_DATA_ENTITY, session.getId());
+			page.setProperty("creator", session.getId());
+			Serializable context = (Serializable) engine.getContextPath().getGlobalContext();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			boolean stored = true;
+			try {
+				ObjectOutputStream oos = new ObjectOutputStream(baos);
+				oos.writeObject(context);
+				if (baos.size() < HALF_MEGA) {
+					page.setProperty("context", new Blob(baos.toByteArray()));
+				} else {
+					return false;
+				}
+				oos.close();
+				baos.close();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				log.warning("putEntity::ioexception 4");
+				return false;
+			}
+
+			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+			datastore.put(page);
+			return stored;
+		}
+		return true;
 	}
 
 	// private static boolean saveModifiedUserSymbols(EvalEngine engine) {
@@ -517,6 +588,10 @@ public class AJAXQueryServlet extends HttpServlet {
 			} else {
 				return createJSONError("Input string parsed to null");
 			}
+		} catch (AbortException se) {
+			return createJSONResult(engine, F.$Aborted, outWriter, errorWriter);
+		} catch (FailedException se) {
+			return createJSONResult(engine, F.$Failed, outWriter, errorWriter);
 		} catch (MathException se) {
 			return createJSONError(se.getMessage());
 		} catch (IOException e) {
@@ -686,7 +761,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	private static String[] listUserVariables(String userId) {
 		StringBuilder bldr = new StringBuilder();
-		boolean rest = false;
+		// boolean rest = false;
 		bldr.append("{");
 		// QueryResultIterable<UserSymbolEntity> qri = UserSymbolService.getAll(userId);
 		// for (UserSymbolEntity userSymbolEntity : qri) {
