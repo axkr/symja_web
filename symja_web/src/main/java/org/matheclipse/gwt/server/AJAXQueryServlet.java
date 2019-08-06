@@ -948,6 +948,7 @@ public class AJAXQueryServlet extends HttpServlet {
 	public synchronized static void initialization(String servlet) {
 		AJAXQueryServlet.INITIALIZED = true;
 		ToggleFeature.COMPILE = false;
+		Config.UNPROTECT_ALLOWED = false;
 		Config.USE_MATHCELL = true;
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
