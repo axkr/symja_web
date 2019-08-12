@@ -19,6 +19,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"> 
 <!-- make page fit nicer in iOS -->
 
+<link rel="search" href="http://matheclipse.org/opensearch.xml" type="application/opensearchdescription+xml" title="Symja" />
+
 <link rel="stylesheet" type="text/css" href="/media/css/styles.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/documentation.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/message.css" />
@@ -110,7 +112,7 @@
 	} else {
 %>
 		  <div id="notAuthenticated" class="login" >
-			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Login with Google (Save session data)</a><br />
+			<a href="<%=userService.createLoginURL(request.getRequestURI())%>" title="Login to persist your session in the datastore">Google-Login</a><br />
 		  </div>
 <%
 	}
@@ -229,55 +231,25 @@ A new password will be sent to your e-mail address.</p></span></td></tr>
 		<input type="button" class="cancel" onclick="dialogNo()" />
 	</div>
 </div>
-
-
-
-<!--
-<div style="display: none">
-<math id="prototype_math" xmlns="http://www.w3.org/1998/Math/MathML">
-<mstyle id="prototype_mstyle"></mstyle>
-<mrow id="prototype_mrow"></mrow>
-<msup id="prototype_msup"><mi>x</mi><mi>y</mi></msup>
-<msub id="prototype_msub"><mi>x</mi><mi>y</mi></msub>
-<msubsup id="prototype_msubsup"><mi>x</mi><mi>y</mi><mi>z</mi></msubsup>
-<mfrac id="prototype_mfrac"><mi>x</mi><mi>y</mi></mfrac>
-<msqrt id="prototype_msqrt"><mi>y</mi></msqrt>
-<mo id="prototype_mo">x</mo>
-<mn id="prototype_mn">1</mn>
-<ms id="prototype_ms">x</ms>
-<mi id="prototype_mi">x</mi>
-<mtext id="prototype_mtext">t</mtext>
-<mtable id="prototype_mtable">
-<mtr id="prototype_mtr">
-<mtd id="prototype_mtd"></mtd>
-</mtr>
-</mtable>
-</math>
-
-<svg id="prototype_svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg">
-<g id="prototype_g" />
-<rect id="prototype_rect" />
-<circle id="prototype_circle" />
-<polyline id="prototype_polyline" />
-<polygon id="prototype_polygon" />
-<path id="prototype_path" />
-<ellipse id="prototype_ellipse" />
-<foreignObject id="prototype_foreignObject" />
-</svg>
-
-<div id="prototype_div_html" xmlns="http://www.w3.org/1999/xhtml"></div>
-<canvas id="prototype_canvas" width="200" height="200" style="border: 1px solid lightgray"></canvas>
-</div>
--->
-
-<!--<div style="white-space: nowrap;" id="calc_all">
-<span class="calc_container" style="font-size: 0.90em; font-family: default;" id="calc_container"></span><span class="calc_next" id="calc_next"> </span><br />
-<span class="calc_below" id="calc_below"> </span>
-</div>-->
+ 
 <div style="white-space: nowrap;" id="calc_all">
 <span class="calc_container" style="font-size: 0.90em; font-family: default;"></span><span class="calc_next"> </span><br />
 <span class="calc_below"> </span>
 </div>
+
+<%
+	Object value = request.getAttribute("input");
+	if (value!= null && (value instanceof String)) {
+	  String str=((String)value).trim();
+	  if (str.length()>0){
+%>	
+<script type="text/javascript">
+window.onload = function iload() { setQueries(['<%=str%>']); }
+</script> 
+<%    
+	  }
+    }
+%>
 
 </body>
 </html>

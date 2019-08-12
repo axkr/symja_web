@@ -23,16 +23,6 @@ import org.matheclipse.core.interfaces.IAST;
 
 public class AJAXSearchServlet extends HttpServlet {
 
-	// private static final Logger log = Logger.getLogger(AJAXSearchServlet.class.getName());
-	//
-	// // private static final boolean UNIT_TEST = false;
-	//
-	// private static final boolean DEBUG = true;
-	//
-	// // private static final boolean USE_MEMCACHE = false;
-	//
-	// private static final int MAX_NUMBER_OF_VARS = 100;
-
 	/**
 	 * 
 	 */
