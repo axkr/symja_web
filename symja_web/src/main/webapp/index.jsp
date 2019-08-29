@@ -71,10 +71,11 @@
 </head>
 
 <body>
-
+ 
 <header>
 <div id="headerleft"> 
- <!--  <img id="logo" class="load" src="/media/img/logo-heptatom.svg" height="32" alt="Logo" />
+ <img id="logo" class="load" src="/media/img/logo.png" height="32" alt="Logo" />
+  <!-- 
   <img id="logotext" class="load" src="/media/img/logo-text.svg" height="26" alt="Symja" />
   <div class="menu">
     <a href="javascript:showOpen()" title="Open"><i class="fa fa-file-text"></i></a>
