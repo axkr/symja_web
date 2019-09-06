@@ -504,10 +504,9 @@ public class AJAXQueryServlet extends HttpServlet {
 		boolean SIMPLE_SYNTAX = true;
 		String input = inputString.trim();
 		if (input.length() > 1 && input.charAt(0) == '?') {
-			StringBuilder buffer = new StringBuilder();
-			Documentation.findDocumentation(buffer, input);
-			return createJSONResult(engine, F.stringx(buffer), outWriter, errorWriter);
-		}
+			IExpr doc = Documentation.findDocumentation(input);
+			return createJSONResult(engine, doc, outWriter, errorWriter);
+		} 
 		try {
 			ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
 			// throws SyntaxError exception, if syntax isn't valid
