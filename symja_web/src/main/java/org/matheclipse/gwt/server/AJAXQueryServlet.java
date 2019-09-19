@@ -949,6 +949,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		ToggleFeature.COMPILE = false;
 		Config.UNPROTECT_ALLOWED = false;
 		Config.USE_MATHCELL = true;
+		Config.USE_JSXGRAPH = false;
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
