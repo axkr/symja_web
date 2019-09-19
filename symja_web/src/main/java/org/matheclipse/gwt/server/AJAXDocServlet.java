@@ -5,18 +5,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 //import com.github.rjeschke.txtmark.BlockEmitter;
 //import com.github.rjeschke.txtmark.Configuration;
@@ -70,9 +77,10 @@ public class AJAXDocServlet extends HttpServlet {
 	}
 
 	public static String generateHTMLString(final String markdownStr) {
-		Parser parser = Parser.builder().build();
+		Set<Extension> EXTENSIONS = Collections.singleton(TablesExtension.create());
+		Parser parser = Parser.builder().extensions(EXTENSIONS).build();
 		Node document = parser.parse(markdownStr);
-		HtmlRenderer renderer = HtmlRenderer.builder().build();
+		HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 		return renderer.render(document); // "<p>This is <em>Sparta</em></p>\n"
 		// Builder builder = Configuration.builder();
 		// BlockEmitter emitter = new BlockEmitter() {
