@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
@@ -60,19 +61,40 @@ import com.google.appengine.api.users.UserServiceFactory;
 
 public class AJAXQueryServlet extends HttpServlet {
 
-	protected final static String MATHCELL_PAGE = //
-			"<script type=\"text/javascript\">\n" + //
+	final static String JSXGRAPH_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
 					"\n" + //
-					"var parent = document.getElementById(\"mathcell\");\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
 					"\n" + //
-					"var id = generateId();\n" + //
-					"parent.id = id;\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>JSXGraph</title>\n" + //
 					"\n" + //
+					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
+					"\n" + //
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"+//
+					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js'\n" + //
+					"        type='text/javascript'></script>\n" + //
+					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js'\n" + //
+					"        type='text/javascript'></script>\n" + //
+
+					"\n" + //
+					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
+					+ //
+					"<script>\n" + //
+					"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-10.0,2.0,10.0,-2.0]});\n"
+					+ "board.suspendUpdate();\n" + //
 					"`1`\n" + //
+					"board.unsuspendUpdate();\n" + //
+					"</script>\n" + //
+					"</div>\n" + //
 					"\n" + //
-					"parent.update( id );\n" + //
-					"\n" + //
-					"</script>\n"; //
+					"</body>\n" + //
+					"</html>";//
 
 	protected final static String MATHCELL_IFRAME = //
 			// "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
@@ -506,7 +528,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		if (input.length() > 1 && input.charAt(0) == '?') {
 			IExpr doc = Documentation.findDocumentation(input);
 			return createJSONResult(engine, doc, outWriter, errorWriter);
-		} 
+		}
 		try {
 			ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
 			// throws SyntaxError exception, if syntax isn't valid
@@ -566,17 +588,33 @@ public class AJAXQueryServlet extends HttpServlet {
 							return createJSONJavaScript("<iframe srcdoc=\"" + html
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
-					} else if (outExpr.isAST(F.JSFormData, 3) && outExpr.second().toString().equals("mathcell")) {
-						try {
-							String manipulateStr = ((IAST) outExpr).arg1().toString();
-							String html = MATHCELL_IFRAME;
-							html = html.replaceAll("`1`", manipulateStr);
-							html = StringEscapeUtils.escapeHtml4(html);
-							return createJSONJavaScript("<iframe srcdoc=\"" + html
-									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-						} catch (Exception ex) {
-							if (Config.SHOW_STACKTRACE) {
-								ex.printStackTrace();
+					} else if (outExpr.isAST(F.JSFormData, 3)) {
+						IAST jsFormData = (IAST)outExpr;
+						if (jsFormData.arg2().toString().equals("mathcell")) {
+							try {
+								String manipulateStr = jsFormData.arg1().toString();
+								String html = MATHCELL_IFRAME;
+								html = html.replaceAll("`1`", manipulateStr);
+								html = StringEscapeUtils.escapeHtml4(html);
+								return createJSONJavaScript("<iframe srcdoc=\"" + html
+										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+							} catch (Exception ex) {
+								if (Config.SHOW_STACKTRACE) {
+									ex.printStackTrace();
+								}
+							}
+						} else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+							try {
+								String manipulateStr = jsFormData.arg1().toString();
+								String html = JSXGRAPH_IFRAME;
+								html = html.replaceAll("`1`", manipulateStr);
+								html = StringEscapeUtils.escapeHtml4(html);
+								return createJSONJavaScript("<iframe srcdoc=\"" + html
+										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+							} catch (Exception ex) {
+								if (Config.SHOW_STACKTRACE) {
+									ex.printStackTrace();
+								}
 							}
 						}
 					}
@@ -948,8 +986,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		AJAXQueryServlet.INITIALIZED = true;
 		ToggleFeature.COMPILE = false;
 		Config.UNPROTECT_ALLOWED = false;
-		Config.USE_MATHCELL = true;
-		Config.USE_JSXGRAPH = false;
+		Config.USE_MANIPULATE_JS = true;
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
