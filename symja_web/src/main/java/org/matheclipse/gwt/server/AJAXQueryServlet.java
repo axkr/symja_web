@@ -151,7 +151,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"<meta charset=\"utf-8\">\n" + //
 					"<title>VIS-NetWork</title>\n" + //
 					"\n" + //
-					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@5.0.0/dist/vis-network.min.js\"></script>\n"
+					"  <script type=\"text/javascript\" src=\"https://cdn.jsdelivr.net/npm/vis-network@6.0.0/dist/vis-network.min.js\"></script>\n"
 					+ //
 					"</head>\n" + //
 					"<body>\n" + //
