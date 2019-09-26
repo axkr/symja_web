@@ -76,7 +76,8 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"+//
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"
+					+ //
 					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js'\n" + //
 					"        type='text/javascript'></script>\n" + //
 					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js'\n" + //
@@ -86,10 +87,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
 					+ //
 					"<script>\n" + //
-					"var board = JXG.JSXGraph.initBoard('jxgbox', {axis:true,boundingbox:[-10.0,2.0,10.0,-2.0]});\n"
-					+ "board.suspendUpdate();\n" + //
 					"`1`\n" + //
-					"board.unsuspendUpdate();\n" + //
 					"</script>\n" + //
 					"</div>\n" + //
 					"\n" + //
@@ -589,7 +587,7 @@ public class AJAXQueryServlet extends HttpServlet {
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
 					} else if (outExpr.isAST(F.JSFormData, 3)) {
-						IAST jsFormData = (IAST)outExpr;
+						IAST jsFormData = (IAST) outExpr;
 						if (jsFormData.arg2().toString().equals("mathcell")) {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
