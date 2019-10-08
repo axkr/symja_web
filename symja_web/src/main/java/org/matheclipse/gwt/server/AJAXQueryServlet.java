@@ -78,10 +78,11 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"
 					+ //
-					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js'\n" + //
-					"        type='text/javascript'></script>\n" + //
-					"<script src='https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js'\n" + //
-					"        type='text/javascript'></script>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.4/build/math.js\"></script>\n"
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js\"\n" + //
+					"        type=\"text/javascript\"></script>\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js\"\n" + //
+					"        type=\"text/javascript\"></script>\n" + //
 
 					"\n" + //
 					"<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
@@ -163,7 +164,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"    nodes: nodes,\n" + //
 					"    edges: edges\n" + //
 					"  };\n" + //
-					"  var options = {};\n" + //
+					"`2`\n" + //
 					"  var network = new vis.Network(container, data, options);\n" + //
 					"</script>\n" + //
 					"</div>\n" + //
@@ -582,6 +583,9 @@ public class AJAXQueryServlet extends HttpServlet {
 						if (javaScriptStr != null) {
 							String html = VISJS_IFRAME;
 							html = html.replaceAll("`1`", javaScriptStr);
+							html = html.replaceAll("`2`", //
+									"  var options = { };\n" //
+							);
 							html = StringEscapeUtils.escapeHtml4(html);
 							return createJSONJavaScript("<iframe srcdoc=\"" + html
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
@@ -606,6 +610,38 @@ public class AJAXQueryServlet extends HttpServlet {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = JSXGRAPH_IFRAME;
 								html = html.replaceAll("`1`", manipulateStr);
+								html = StringEscapeUtils.escapeHtml4(html);
+								return createJSONJavaScript("<iframe srcdoc=\"" + html
+										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+							} catch (Exception ex) {
+								if (Config.SHOW_STACKTRACE) {
+									ex.printStackTrace();
+								}
+							}
+						} else if (jsFormData.arg2().toString().equals("treeform")) {
+							try {
+								String manipulateStr = jsFormData.arg1().toString();
+								String html = VISJS_IFRAME;
+								html = html.replaceAll("`1`", manipulateStr);
+								html = html.replaceAll("`2`", //
+										"  var options = {\n" + //
+												"		  edges: {\n" + //
+												"              smooth: {\n" + //
+												"                  type: 'cubicBezier',\n" + //
+												"                  forceDirection:  'vertical',\n" + //
+												"                  roundness: 0.4\n" + //
+												"              }\n" + //
+												"          },\n" + //
+												"          layout: {\n" + //
+												"              hierarchical: {\n" + //
+												"                  direction: \"UD\"\n" + //
+												"              }\n" + //
+												"          },\n" + //
+												"          nodes: {\n" + "            shape: 'box'\n" + "          },\n"
+												+ //
+												"          physics:false\n" + //
+												"      }; "//
+								);
 								html = StringEscapeUtils.escapeHtml4(html);
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
