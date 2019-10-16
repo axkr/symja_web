@@ -76,12 +76,12 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraph.css\" />\n"
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css\" />\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.5/build/math.js\"></script>\n"
-					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/jsxgraphcore.js\"\n" + //
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
-					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.3.5/geonext.min.js\"\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 
 					"\n" + //
