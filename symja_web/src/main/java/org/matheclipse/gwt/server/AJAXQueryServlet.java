@@ -691,7 +691,9 @@ public class AJAXQueryServlet extends HttpServlet {
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
 		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false, decimalFormat);
 		StringWriter stw = new StringWriter();
-		mathUtil.toMathML(outExpr, stw, true);
+		if (!mathUtil.toMathML(outExpr, stw, true)) {
+			return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
+		}
 		JSONArray temp;
 
 		JSONObject resultsJSON = new JSONObject();
@@ -874,12 +876,16 @@ public class AJAXQueryServlet extends HttpServlet {
 			if (function.length() > 0 && function.equals("$mathml")) {
 				MathMLUtilities mathUtil = new MathMLUtilities(engine, false, true);
 				StringWriter stw = new StringWriter();
-				mathUtil.toMathML(res, stw);
+				if (!mathUtil.toMathML(res, stw)) {
+					return new String[] { "error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE };
+				}
 				return new String[] { "mathml", stw.toString() };
 			} else if (function.length() > 0 && function.equals("$tex")) {
 				TeXUtilities texUtil = new TeXUtilities(engine, true);
 				StringWriter stw = new StringWriter();
-				texUtil.toTeX(res, stw);
+				if (!texUtil.toTeX(res, stw)) {
+					return new String[] { "error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE };
+				}
 				return new String[] { "tex", stw.toString() };
 			} else {
 				return new String[] { "expr", res };
@@ -1024,6 +1030,8 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.JAS_NO_THREADS = false;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
+		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
+		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
 
