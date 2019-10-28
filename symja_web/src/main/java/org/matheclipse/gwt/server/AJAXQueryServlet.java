@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -582,8 +583,8 @@ public class AJAXQueryServlet extends HttpServlet {
 						String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) outExpr);
 						if (javaScriptStr != null) {
 							String html = VISJS_IFRAME;
-							html = html.replaceAll("`1`", javaScriptStr);
-							html = html.replaceAll("`2`", //
+							html = StringUtils.replace(html, "`1`", javaScriptStr);
+							html = StringUtils.replace(html, "`2`", //
 									"  var options = { };\n" //
 							);
 							html = StringEscapeUtils.escapeHtml4(html);
@@ -596,7 +597,7 @@ public class AJAXQueryServlet extends HttpServlet {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = MATHCELL_IFRAME;
-								html = html.replaceAll("`1`", manipulateStr);
+								html = StringUtils.replace(html, "`1`", manipulateStr); 
 								html = StringEscapeUtils.escapeHtml4(html);
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
@@ -609,7 +610,7 @@ public class AJAXQueryServlet extends HttpServlet {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = JSXGRAPH_IFRAME;
-								html = html.replaceAll("`1`", manipulateStr);
+								html = StringUtils.replace(html, "`1`", manipulateStr);
 								html = StringEscapeUtils.escapeHtml4(html);
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
@@ -622,8 +623,8 @@ public class AJAXQueryServlet extends HttpServlet {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = VISJS_IFRAME;
-								html = html.replaceAll("`1`", manipulateStr);
-								html = html.replaceAll("`2`", //
+								html = StringUtils.replace(html, "`1`", manipulateStr);
+								html = StringUtils.replace(html, "`2`", //
 										"  var options = {\n" + //
 												"		  edges: {\n" + //
 												"              smooth: {\n" + //
