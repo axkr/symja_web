@@ -1033,6 +1033,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.MATHML_TRIG_LOWERCASE = false;
 		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
+		Config.MAX_BIT_COUNT = Short.MAX_VALUE;
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
 
