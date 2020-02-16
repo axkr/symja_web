@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.util.WriterOutputStream;
+import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
@@ -42,6 +43,7 @@ import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.math.MathException;
@@ -169,6 +171,45 @@ public class AJAXQueryServlet extends HttpServlet {
 					"  var network = new vis.Network(container, data, options);\n" + //
 					"</script>\n" + //
 					"</div>\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	protected final static String PLOTLY_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>Plotly</title>\n" + //
+					"\n" + //
+					"   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n" + //
+					"</head>\n" + //
+					"<body>\n" + //
+					"<div id='plotly' ></div>\n" + //
+					"`1`\n" + //
+					"</body>\n" + //
+					"</html>";//
+
+	protected final static String HTML_IFRAME = //
+			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //
+					"\n" + //
+					"<!DOCTYPE html PUBLIC\n" + //
+					"  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n" + //
+					"  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n" + //
+					"\n" + //
+					"<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+					+ //
+					"<head>\n" + //
+					"<meta charset=\"utf-8\">\n" + //
+					"<title>HTML</title>\n" + //
+					"</head>\n" + //
+					"<body>\n" + //
+					"`1`\n" + //
 					"</body>\n" + //
 					"</html>";//
 
@@ -591,13 +632,23 @@ public class AJAXQueryServlet extends HttpServlet {
 							return createJSONJavaScript("<iframe srcdoc=\"" + html
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
+					} else if (outExpr instanceof ASTDataset) {
+						String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
+						if (javaScriptStr != null) {
+							String htmlSnippet = javaScriptStr.toString();
+							String html = HTML_IFRAME;
+							html = StringUtils.replace(html, "`1`", htmlSnippet);
+							html = StringEscapeUtils.escapeHtml4(html);
+							return createJSONJavaScript("<iframe srcdoc=\"" + html
+									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+						}
 					} else if (outExpr.isAST(F.JSFormData, 3)) {
 						IAST jsFormData = (IAST) outExpr;
 						if (jsFormData.arg2().toString().equals("mathcell")) {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = MATHCELL_IFRAME;
-								html = StringUtils.replace(html, "`1`", manipulateStr); 
+								html = StringUtils.replace(html, "`1`", manipulateStr);
 								html = StringEscapeUtils.escapeHtml4(html);
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
@@ -610,6 +661,19 @@ public class AJAXQueryServlet extends HttpServlet {
 							try {
 								String manipulateStr = jsFormData.arg1().toString();
 								String html = JSXGRAPH_IFRAME;
+								html = StringUtils.replace(html, "`1`", manipulateStr);
+								html = StringEscapeUtils.escapeHtml4(html);
+								return createJSONJavaScript("<iframe srcdoc=\"" + html
+										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+							} catch (Exception ex) {
+								if (Config.SHOW_STACKTRACE) {
+									ex.printStackTrace();
+								}
+							}
+						} else if (jsFormData.arg2().toString().equals("plotly")) {
+							try {
+								String manipulateStr = jsFormData.arg1().toString();
+								String html = PLOTLY_IFRAME;
 								html = StringUtils.replace(html, "`1`", manipulateStr);
 								html = StringEscapeUtils.escapeHtml4(html);
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
@@ -651,6 +715,15 @@ public class AJAXQueryServlet extends HttpServlet {
 									ex.printStackTrace();
 								}
 							}
+						}
+					} else if (outExpr.isString()) {
+						IStringX str = (IStringX) outExpr;
+						if (str.getMimeType() == IStringX.TEXT_HTML) {
+							String htmlSnippet = str.toString();
+							String htmlPage = HTML_IFRAME;
+							htmlPage = StringUtils.replace(htmlPage, "`1`", htmlSnippet);
+							return createJSONJavaScript("<iframe srcdoc=\"" + htmlPage
+									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
 					}
 					return createJSONResult(engine, outExpr, outWriter, errorWriter);
