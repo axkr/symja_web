@@ -1,21 +1,3 @@
-/**
-    Symja: a general-purpose computer algebra system
-    Copyright (C) 2011-2013 The Symja Team
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-**/
-
 var deleting;
 var blurredElement;
 
@@ -428,7 +410,7 @@ function keyDown(event) {
 		return;
 	refreshInputSize(textarea);
 	
-	if (event.keyCode == Event.KEY_RETURN && (event.shiftKey || event.keyLocation == 3)) {
+	if (event.keyCode == Event.KEY_RETURN && (event.shiftKey || event.location == 3)) {
 		if (!Prototype.Browser.IE)
 			event.stop();
 		
@@ -452,9 +434,9 @@ function keyDown(event) {
 			} else
 				createQuery(textarea.li.nextSibling);
 		}
-	} else
-		if (isGlobalKey(event))
-			event.stop();
+	} // else
+	//	if (isGlobalKey(event))
+	//		event.stop();
 }
 
 function deleteMouseDown(event) {
@@ -712,7 +694,7 @@ function domLoaded() {
 			}.bindAsEventListener());
 		}
 		
-		$(document).observe('keyup', globalKeyUp.bindAsEventListener($('document')));
+//		$(document).observe('keyup', globalKeyUp.bindAsEventListener($('document')));
 		
 		if (!loadLink())
 			createQuery();

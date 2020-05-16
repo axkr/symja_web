@@ -9,9 +9,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -46,6 +43,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.appengine.api.datastore.Blob;
@@ -116,7 +114,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.7/build/math.js\"></script>\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.7/build/mathcell.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
 					+ //
@@ -653,7 +651,7 @@ public class AJAXQueryServlet extends HttpServlet {
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 							} catch (Exception ex) {
-								if (Config.SHOW_STACKTRACE) {
+								if (FEConfig.SHOW_STACKTRACE) {
 									ex.printStackTrace();
 								}
 							}
@@ -666,7 +664,7 @@ public class AJAXQueryServlet extends HttpServlet {
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 							} catch (Exception ex) {
-								if (Config.SHOW_STACKTRACE) {
+								if (FEConfig.SHOW_STACKTRACE) {
 									ex.printStackTrace();
 								}
 							}
@@ -679,7 +677,7 @@ public class AJAXQueryServlet extends HttpServlet {
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 							} catch (Exception ex) {
-								if (Config.SHOW_STACKTRACE) {
+								if (FEConfig.SHOW_STACKTRACE) {
 									ex.printStackTrace();
 								}
 							}
@@ -711,7 +709,7 @@ public class AJAXQueryServlet extends HttpServlet {
 								return createJSONJavaScript("<iframe srcdoc=\"" + html
 										+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 							} catch (Exception ex) {
-								if (Config.SHOW_STACKTRACE) {
+								if (FEConfig.SHOW_STACKTRACE) {
 									ex.printStackTrace();
 								}
 							}
@@ -761,9 +759,9 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
 			StringWriter errorWriter) {
-		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false, decimalFormat);
+//		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+//		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 		StringWriter stw = new StringWriter();
 		if (!mathUtil.toMathML(outExpr, stw, true)) {
 			return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);

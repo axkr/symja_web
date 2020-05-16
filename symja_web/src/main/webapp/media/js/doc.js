@@ -128,8 +128,8 @@ function searchKeyUp(event) {
 }
 
 function searchKeyDown(event) {
-	if (isGlobalKey(event))
-		event.stop();
+//	if (isGlobalKey(event))
+//		event.stop();
 }
 
 function initDoc() {
