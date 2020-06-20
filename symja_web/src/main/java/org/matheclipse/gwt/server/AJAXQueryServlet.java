@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.ASTDataset;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
@@ -79,7 +80,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css\" />\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
 					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
@@ -113,7 +114,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.8/build/math.js\"></script>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
@@ -573,6 +574,10 @@ public class AJAXQueryServlet extends HttpServlet {
 			// throws SyntaxError exception, if syntax isn't valid
 			IExpr inExpr = parser.parse(input);
 			if (inExpr != null) {
+				long numberOfLeaves = inExpr.leafCount();
+				if (numberOfLeaves > Config.MAX_INPUT_LEAVES) {
+					return createJSONError("Input expression too big!");
+				}
 				if (numericMode.equals("N")) {
 					inExpr = F.N(inExpr);
 				}
@@ -618,8 +623,8 @@ public class AJAXQueryServlet extends HttpServlet {
 					if (outExpr.isASTSizeGE(F.Show, 2)) {
 						IAST show = (IAST) outExpr;
 						return createJSONShow(engine, show);
-					} else if (outExpr.head().equals(F.Graph) && outExpr instanceof IDataExpr) {
-						String javaScriptStr = GraphFunctions.graphToJSForm((IDataExpr) outExpr);
+					} else if (outExpr instanceof GraphExpr) {
+						String javaScriptStr = GraphFunctions.graphToJSForm((GraphExpr) outExpr);
 						if (javaScriptStr != null) {
 							String html = VISJS_IFRAME;
 							html = StringUtils.replace(html, "`1`", javaScriptStr);
@@ -759,8 +764,8 @@ public class AJAXQueryServlet extends HttpServlet {
 
 	public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
 			StringWriter errorWriter) {
-//		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
-//		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+		// DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+		// DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
 		MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
 		StringWriter stw = new StringWriter();
 		if (!mathUtil.toMathML(outExpr, stw, true)) {
@@ -1105,6 +1110,9 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
+		Config.MAX_INPUT_LEAVES = 1000L;
+		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
 

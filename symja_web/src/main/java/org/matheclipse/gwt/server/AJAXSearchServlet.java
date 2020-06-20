@@ -94,8 +94,7 @@ public class AJAXSearchServlet extends HttpServlet {
 			out.append("\n");
 			if (list.size() == 2) {
 				printMarkdown(out, list.get(1).toString());
-			} else if (list.size() == 1
-					&& (name.equals("D") || name.equals("E") || name.equals("I") || name.equals("N"))) {
+			} else if (list.size() == 1 && name.length() == 1) {
 				printMarkdown(out, name);
 			}
 		} catch (IOException e) {
@@ -109,36 +108,6 @@ public class AJAXSearchServlet extends HttpServlet {
 		HtmlRenderer renderer = HtmlRenderer.builder().extensions(EXTENSIONS).build();
 		return renderer.render(document);
 
-		// Builder builder = Configuration.builder();
-		// BlockEmitter emitter = new BlockEmitter() {
-		// public void emitBlock(StringBuilder out, List<String> lines, String meta) {
-		// out.append("<pre>");
-		// for (final String s : lines) {
-		// for (int i = 0; i < s.length(); i++) {
-		// final char c = s.charAt(i);
-		// switch (c) {
-		// case '&':
-		// out.append("&amp;");
-		// break;
-		// case '<':
-		// out.append("&lt;");
-		// break;
-		// case '>':
-		// out.append("&gt;");
-		// break;
-		// default:
-		// out.append(c);
-		// break;
-		// }
-		// }
-		// out.append('\n');
-		// }
-		// out.append("</pre>\n");
-		// }
-		//
-		// };
-		// Configuration config = builder.setCodeBlockEmitter(emitter).enableSafeMode().forceExtentedProfile().build();
-		// return Processor.process(markdownStr, config);
 	}
 
 	public static void printMarkdown(Appendable out, String symbolName) {
