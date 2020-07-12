@@ -39,7 +39,6 @@ import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IDataExpr;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -78,12 +77,12 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.css\" />\n"
+					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
-					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/jsxgraphcore.js\"\n" + //
+					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
-					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/0.99.7/geonext.min.js\"\n" + //
+					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 
 					"\n" + //
