@@ -21,6 +21,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
