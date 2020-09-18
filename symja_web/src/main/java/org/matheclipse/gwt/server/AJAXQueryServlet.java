@@ -31,8 +31,7 @@ import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
-import org.matheclipse.core.eval.util.WriterOutputStream;
-import org.matheclipse.core.expression.ASTDataset;
+import org.matheclipse.core.eval.util.WriterOutputStream; 
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -79,7 +78,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js\"></script>\n"
 					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n" + //
@@ -113,7 +112,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.2.9/build/math.js\"></script>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js\"></script>\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
@@ -634,16 +633,16 @@ public class AJAXQueryServlet extends HttpServlet {
 							return createJSONJavaScript("<iframe srcdoc=\"" + html
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
-					} else if (outExpr instanceof ASTDataset) {
-						String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
-						if (javaScriptStr != null) {
-							String htmlSnippet = javaScriptStr.toString();
-							String html = HTML_IFRAME;
-							html = StringUtils.replace(html, "`1`", htmlSnippet);
-							html = StringEscapeUtils.escapeHtml4(html);
-							return createJSONJavaScript("<iframe srcdoc=\"" + html
-									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-						}
+//					} else if (outExpr instanceof ASTDataset) {
+//						String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
+//						if (javaScriptStr != null) {
+//							String htmlSnippet = javaScriptStr.toString();
+//							String html = HTML_IFRAME;
+//							html = StringUtils.replace(html, "`1`", htmlSnippet);
+//							html = StringEscapeUtils.escapeHtml4(html);
+//							return createJSONJavaScript("<iframe srcdoc=\"" + html
+//									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+//						}
 					} else if (outExpr.isAST(F.JSFormData, 3)) {
 						IAST jsFormData = (IAST) outExpr;
 						if (jsFormData.arg2().toString().equals("mathcell")) {
@@ -1111,6 +1110,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_INPUT_LEAVES = 1000L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
+		Config.MAX_POLYNOMIAL_DEGREE=100;
 
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
