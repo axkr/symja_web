@@ -31,7 +31,7 @@ import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.FailedException;
-import org.matheclipse.core.eval.util.WriterOutputStream; 
+import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.data.GraphExpr;
@@ -78,7 +78,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
 					+ //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js\"></script>\n"
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.0/build/math.js\"></script>\n"
 					+ "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n" + //
 					"        type=\"text/javascript\"></script>\n" + //
 					"<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n" + //
@@ -112,7 +112,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					"\n" + //
 					"<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n" + //
 					"\n" + //
-					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.3.0/build/math.js\"></script>\n" + //
+					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.0/build/math.js\"></script>\n" + //
 					"<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.8.8/build/mathcell.js\"></script>\n"
 					+ //
 					"<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
@@ -122,7 +122,7 @@ public class AJAXQueryServlet extends HttpServlet {
 					+ //
 					"<script>\n" + //
 					"\n" + //
-					"var parent = document.scripts[ document.scripts.length - 1 ].parentNode;\n" + //
+					"var parent = document.currentScript.parentNode;\n" + //
 					"\n" + //
 					"var id = generateId();\n" + //
 					"parent.id = id;\n" + //
@@ -417,21 +417,32 @@ public class AJAXQueryServlet extends HttpServlet {
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 			Entity entity;
 
+			ByteArrayInputStream bais = null;
+			ObjectInputStream ois = null;
 			try {
 				entity = datastore.get(pageKey);
-				ByteArrayInputStream bais = new ByteArrayInputStream(((Blob) entity.getProperty("context")).getBytes());
-				ObjectInputStream ois = new ObjectInputStream(bais);
+				bais = new ByteArrayInputStream(((Blob) entity.getProperty("context")).getBytes());
+				ois = new ObjectInputStream(bais);
 				Context c = (Context) ois.readObject();
 				if (c != null) {
 					engine.getContextPath().setGlobalContext(c);
 				}
-				ois.close();
-				bais.close();
 			} catch (EntityNotFoundException nefe) {
 				//
 			} catch (Exception rex) {
 				rex.printStackTrace();
 				log.warning("getEntity::ioexception 2");
+			} finally {
+				try {
+					if (ois != null) {
+						ois.close();
+					}
+					if (bais != null) {
+						bais.close();
+					}
+				} catch (IOException e) {
+					log.severe("getEntity::stream close problem");
+				}
 			}
 		}
 		return engine;
@@ -491,21 +502,32 @@ public class AJAXQueryServlet extends HttpServlet {
 			page.setProperty("creator", session.getId());
 			Serializable context = (Serializable) engine.getContextPath().getGlobalContext();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = null;
 			boolean stored = true;
 			try {
-				ObjectOutputStream oos = new ObjectOutputStream(baos);
+				oos = new ObjectOutputStream(baos);
 				oos.writeObject(context);
 				if (baos.size() < HALF_MEGA) {
 					page.setProperty("context", new Blob(baos.toByteArray()));
 				} else {
 					return false;
 				}
-				oos.close();
-				baos.close();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				log.warning("putEntity::ioexception 4");
 				return false;
+			} finally {
+				try {
+					if (oos != null) {
+						oos.close();
+					}
+					if (baos != null) {
+						baos.close();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -633,16 +655,16 @@ public class AJAXQueryServlet extends HttpServlet {
 							return createJSONJavaScript("<iframe srcdoc=\"" + html
 									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
 						}
-//					} else if (outExpr instanceof ASTDataset) {
-//						String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
-//						if (javaScriptStr != null) {
-//							String htmlSnippet = javaScriptStr.toString();
-//							String html = HTML_IFRAME;
-//							html = StringUtils.replace(html, "`1`", htmlSnippet);
-//							html = StringEscapeUtils.escapeHtml4(html);
-//							return createJSONJavaScript("<iframe srcdoc=\"" + html
-//									+ "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
-//						}
+						// } else if (outExpr instanceof ASTDataset) {
+						// String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
+						// if (javaScriptStr != null) {
+						// String htmlSnippet = javaScriptStr.toString();
+						// String html = HTML_IFRAME;
+						// html = StringUtils.replace(html, "`1`", htmlSnippet);
+						// html = StringEscapeUtils.escapeHtml4(html);
+						// return createJSONJavaScript("<iframe srcdoc=\"" + html
+						// + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+						// }
 					} else if (outExpr.isAST(F.JSFormData, 3)) {
 						IAST jsFormData = (IAST) outExpr;
 						if (jsFormData.arg2().toString().equals("mathcell")) {
@@ -1102,7 +1124,8 @@ public class AJAXQueryServlet extends HttpServlet {
 		ToggleFeature.COMPILE = false;
 		Config.UNPROTECT_ALLOWED = false;
 		Config.USE_MANIPULATE_JS = true;
-		Config.JAS_NO_THREADS = false;
+		// disable threads for JAS on appengine
+		Config.JAS_NO_THREADS = true;
 		Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
 		Config.MATHML_TRIG_LOWERCASE = false;
 		Config.MAX_AST_SIZE = ((int) Short.MAX_VALUE) * 8;
@@ -1110,7 +1133,7 @@ public class AJAXQueryServlet extends HttpServlet {
 		Config.MAX_BIT_LENGTH = ((int) Short.MAX_VALUE) * 8;
 		Config.MAX_INPUT_LEAVES = 1000L;
 		Config.MAX_MATRIX_DIMENSION_SIZE = 100;
-		Config.MAX_POLYNOMIAL_DEGREE=100;
+		Config.MAX_POLYNOMIAL_DEGREE = 100;
 
 		EvalEngine.get().setPackageMode(true);
 		F.initSymbols(null, new SymbolObserver(), false);
