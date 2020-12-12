@@ -98,6 +98,7 @@ public class AJAXSearchServlet extends HttpServlet {
             if (i != list.size() - 1) {
               out.append(", ");
             }
+            is.close();
           }
         }
       }

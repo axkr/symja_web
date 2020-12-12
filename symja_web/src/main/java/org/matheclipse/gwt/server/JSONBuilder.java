@@ -176,4 +176,48 @@ public class JSONBuilder {
 
     return new String[] {"mathml", json.toString()};
   }
+
+  public static String[] createJSONHTML(
+      EvalEngine engine, String html, StringWriter outWriter, StringWriter errorWriter) {
+    // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+    // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+    //    MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
+    //	    StringWriter stw = new StringWriter();
+    //	    stw.append(html);
+
+    ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
+    resultsJSON.put("line", Integer.valueOf(21));
+    resultsJSON.put("result", html);
+    ArrayNode temp = JSON_OBJECT_MAPPER.createArrayNode();
+
+    String message = errorWriter.toString();
+    if (message.length() > 0) {
+      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      messageJSON.put("prefix", "Error");
+      messageJSON.put("message", Boolean.TRUE);
+      messageJSON.put("tag", "evaluation");
+      messageJSON.put("symbol", "General");
+      messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+      temp.add(messageJSON);
+    }
+
+    message = outWriter.toString();
+    if (message.length() > 0) {
+      ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
+      messageJSON.put("prefix", "Output");
+      messageJSON.put("message", Boolean.TRUE);
+      messageJSON.put("tag", "evaluation");
+      messageJSON.put("symbol", "General");
+      messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+      temp.add(messageJSON);
+    }
+    resultsJSON.putPOJO("out", temp);
+
+    temp = JSON_OBJECT_MAPPER.createArrayNode();
+    temp.add(resultsJSON);
+    ObjectNode json = JSON_OBJECT_MAPPER.createObjectNode();
+    json.putPOJO("results", temp);
+
+    return new String[] {"mathml", json.toString()};
+  }
 }

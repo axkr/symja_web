@@ -229,6 +229,7 @@ function translateDOMElement(element, svg) {
 	if (nodeName == 'math') {
 		var mstyle = createMathNode('mstyle');
 		mstyle.setAttribute('displaystyle', 'true');
+		mstyle.setAttribute('mathvariant', 'sans-serif');
 		dom.appendChild(mstyle);
 		childParent = mstyle;
 	}
@@ -507,11 +508,10 @@ function createQuery(before, noFocus, updatingAll) {
 	var li = $E('li', {'id': 'query_' + queryIndex++, 'class': 'query'},
 		ul = $E('ul', {'class': 'query'},
 			$E('li', {'class': 'request'},
+			    textarea = $E('textarea', {'class': 'request', 'spellcheck': 'false'}),
 				$E('span', {'class': 'submitbutton', 'title': "Submit [Shift+Return]"},
-							submitButton = $E('span', $T('=')) 
-							//testButton = $E('span', $T('>>'))
-				), 
-				textarea = $E('textarea', {'class': 'request', 'spellcheck': 'false'})
+							submitButton = $E('span', $T('='))
+				)
 			)
 		),
 		moveHandle = $E('span', {'class': 'move'}),

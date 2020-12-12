@@ -18,7 +18,7 @@ public class AJAXQueryServletTest {
 		new AJAXQueryServlet().doGet(null, response);
 		Assert.assertEquals("text/html; charset=UTF-8", response.getContentType());
 		Assert.assertEquals(
-				"{\"results\":[{\"result\":null,\"line\":null,\"out\":[{\"symbol\":\"General\",\"prefix\":\"Error\",\"tag\":\"syntax\",\"text\":\"<math><mrow><mtext>No input expression posted!<\\/mtext><\\/mrow><\\/math>\",\"message\":true}]}]}\r\n",
+				"{\"results\":[{\"line\":null,\"result\":null,\"out\":[{\"prefix\":\"Error\",\"message\":true,\"tag\":\"syntax\",\"symbol\":\"General\",\"text\":\"<math><mrow><mtext>No input expression posted!</mtext></mrow></math>\"}]}]}\r\n",
 				response.getWriterContent().toString());
 	}
 }
