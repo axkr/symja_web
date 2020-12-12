@@ -321,7 +321,7 @@ public class EvaluateServlet extends HttpServlet {
 			} else if (function.length() > 0 && function.equals("$tex")) {
 				TeXUtilities texUtil = new TeXUtilities(engine, true);
 				StringWriter stw = new StringWriter();
-				texUtil.toTeX(res, stw);
+				texUtil.toTeX(res, stw, false);
 				return new String[] { "tex", stw.toString() };
 			} else {
 				return new String[] { "expr", res };
