@@ -1292,7 +1292,7 @@ public class AJAXQueryServlet extends HttpServlet {
     Config.MAX_POLYNOMIAL_DEGREE = 100;
 
     EvalEngine.get().setPackageMode(true);
-    F.initSymbols(null, new SymbolObserver(), false);
+    F.initSymbols(null, null, false);
 
     F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
     F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
