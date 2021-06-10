@@ -31,6 +31,7 @@ import org.matheclipse.core.eval.exception.FailedException;
 import org.matheclipse.core.eval.util.WriterOutputStream;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
@@ -38,6 +39,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
+import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -58,133 +60,30 @@ import com.google.appengine.api.users.UserServiceFactory;
 
 public class AJAXQueryServlet extends HttpServlet {
 
-  static final String JSXGRAPH_IFRAME = //
+  protected static final String GRAPHICS3D_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>JSXGraph</title>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraph.min.css\" />\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/jsxgraphcore.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.1.0/geonext.min.js\"\n"
-          + //
-          "        type=\"text/javascript\"></script>\n"
-          + //
-          "\n"
-          + //
-          "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "`1`\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
-
-  protected static final String MATHCELL_IFRAME = //
-      // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>MathCell</title>\n"
-          + //
-          "</head>\n"
-          + //
-          "\n"
-          + //
-          "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.3/build/math.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.0/build/mathcell.js\"></script>\n"
-          + //
-          "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + //
-          "\n"
-          + //
-          "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + //
-          "<script>\n"
-          + //
-          "\n"
-          + //
-          "var parent = document.currentScript.parentNode;\n"
-          + //
-          "\n"
-          + //
-          "var id = generateId();\n"
-          + //
-          "parent.id = id;\n"
-          + //
-          "\n"
-          + //
-          "`1`\n"
-          + //
-          "\n"
-          + //
-          "parent.update( id );\n"
-          + //
-          "\n"
-          + //
-          "</script>\n"
-          + //
-          "</div>\n"
-          + //
-          "\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
+          + "\n"
+          + "<!DOCTYPE html PUBLIC\n"
+          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
+          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
+          + "\n"
+          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
+          + "<head>\n"
+          + "<meta charset=\"utf-8\">\n"
+          + "<title>Graphics3D</title>\n"
+          + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
+          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
+          + "</head>\n"
+          + "\n"
+          + "<body>\n"
+          + "  <div id=\"graphics3d\"></div>\n"
+          + "</body>\n"
+          + "<script>\n"
+          + "var JSONThree = `1`;\n"
+          + "	interpretate(JSONThree);\n"
+          + "</script>"
+          + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -240,43 +139,6 @@ public class AJAXQueryServlet extends HttpServlet {
           "</script>\n"
           + //
           "</div>\n"
-          + //
-          "</body>\n"
-          + //
-          "</html>"; //
-
-  protected static final String PLOTLY_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + //
-          "\n"
-          + //
-          "<!DOCTYPE html PUBLIC\n"
-          + //
-          "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + //
-          "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + //
-          "\n"
-          + //
-          "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + //
-          "<head>\n"
-          + //
-          "<meta charset=\"utf-8\">\n"
-          + //
-          "<title>Plotly</title>\n"
-          + //
-          "\n"
-          + //
-          "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + //
-          "</head>\n"
-          + //
-          "<body>\n"
-          + //
-          "<div id='plotly' ></div>\n"
-          + //
-          "`1`\n"
           + //
           "</body>\n"
           + //
@@ -756,8 +618,27 @@ public class AJAXQueryServlet extends HttpServlet {
         // }
         engine.addInOut(inExpr, outExpr);
         if (outExpr != null) {
-          if (outExpr.isAST(F.Graphics) || outExpr.isAST(F.Graphics3D)) {
+          if (outExpr.isAST(S.Graphics)) {
             outExpr = F.Show(outExpr);
+          } else if (outExpr.isAST(S.Graphics3D)) {
+            IExpr expressionJSON =
+                engine.evaluate(F.ExportString(F.N(outExpr), F.stringx("ExpressionJSON")));
+            if (expressionJSON.isString()) {
+              String jsonStr = expressionJSON.toString();
+              try {
+                String html = GRAPHICS3D_IFRAME;
+                html = StringUtils.replace(html, "`1`", jsonStr);
+                html = StringEscapeUtils.escapeHtml4(html);
+                return JSONBuilder.createJSONJavaScript(
+                    "<iframe srcdoc=\""
+                        + html
+                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+              } catch (Exception ex) {
+                if (FEConfig.SHOW_STACKTRACE) {
+                  ex.printStackTrace();
+                }
+              }
+            }
           }
           if (outExpr.isASTSizeGE(F.Show, 2)) {
             IAST show = (IAST) outExpr;
@@ -794,14 +675,17 @@ public class AJAXQueryServlet extends HttpServlet {
             IAST jsFormData = (IAST) outExpr;
             if (jsFormData.arg2().toString().equals("mathcell")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = MATHCELL_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = MATHCELL_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -809,14 +693,17 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = JSXGRAPH_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = JSXGRAPH_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -824,14 +711,17 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
-                String manipulateStr = jsFormData.arg1().toString();
-                String html = PLOTLY_IFRAME;
-                html = StringUtils.replace(html, "`1`", manipulateStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createJSONIFrame(
+                    JSONBuilder.PLOTLY_IFRAME, jsFormData.arg1().toString());
+                //                String manipulateStr = jsFormData.arg1().toString();
+                //                String html = PLOTLY_IFRAME;
+                //                html = StringUtils.replace(html, "`1`", manipulateStr);
+                //                html = StringEscapeUtils.escapeHtml4(html);
+                //                return JSONBuilder.createJSONJavaScript(
+                //                    "<iframe srcdoc=\""
+                //                        + html
+                //                        + "\" style=\"display: block; width: 100%; height: 100%;
+                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -1290,6 +1180,7 @@ public class AJAXQueryServlet extends HttpServlet {
     Config.MAX_INPUT_LEAVES = 1000L;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     Config.MAX_POLYNOMIAL_DEGREE = 100;
+    Config.PRIME_FACTORS = new BigIntegerPrimality();
 
     EvalEngine.get().setPackageMode(true);
     F.initSymbols(null, null, false);
