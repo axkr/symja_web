@@ -1,17 +1,16 @@
 package org.matheclipse.gwt.server;
 
-import java.io.IOException;
 import java.io.StringWriter;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
-import org.matheclipse.core.graphics.Show2SVG;
+import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -100,9 +99,8 @@ public class JSONBuilder {
    *
    * @param script
    * @return
-   * @throws IOException
    */
-  public static String[] createJSONJavaScript(String script) throws IOException {
+  public static String[] createJSONJavaScript(String script) {
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", Integer.valueOf(21));
@@ -119,10 +117,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONShow(EvalEngine engine, IAST show) throws IOException {
+  public static String[] createJSONShow(EvalEngine engine, IAST show) {
     StringBuilder stw = new StringBuilder();
     stw.append("<math><mtable><mtr><mtd>");
-    Show2SVG.toSVG(show, stw);
+    if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
+      StringBuilder buf = new StringBuilder(2048);
+      GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), stw);
+    }
     stw.append("</mtd></mtr></mtable></math>");
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
@@ -235,9 +236,8 @@ public class JSONBuilder {
    * @param html
    * @param manipulateStr
    * @return
-   * @throws IOException
    */
-  public static String[] createJSONIFrame(String html, String manipulateStr) throws IOException {
+  public static String[] createJSONIFrame(String html, String manipulateStr) {
     html = IOFunctions.templateRender(html, new String[] {manipulateStr});
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript(
@@ -246,91 +246,31 @@ public class JSONBuilder {
             + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
   }
 
-  static final String JSXGRAPH_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>JSXGraph</title>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<link rel=\"stylesheet\" type=\"text/css\" href=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraph.min.css\" />\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/jsxgraphcore.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.2.1/geonext.min.js\"\n"
-          + "        type=\"text/javascript\"></script>\n"
-          + "\n"
-          + "<div id=\"jxgbox\" class=\"jxgbox\" style=\"display: flex; width:99%; height:99%; margin: 0; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "`1`\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>";
+  public static String[] createMathcellIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildMathcell(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
 
-  protected static final String MATHCELL_IFRAME = //
-      // "<html style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>MathCell</title>\n"
-          + "</head>\n"
-          + "\n"
-          + "<body style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/math@1.4.4/build/math.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/paulmasson/mathcell@1.9.2/build/mathcell.js\"></script>\n"
-          + "<script src=\"https://cdn.jsdelivr.net/gh/mathjax/MathJax@2.7.5/MathJax.js?config=TeX-AMS_HTML\"></script>"
-          + "\n"
-          + "<div class=\"mathcell\" style=\"display: flex; width: 100%; height: 100%; margin: 0;  padding: .25in .5in .5in .5in; flex-direction: column; overflow: hidden\">\n"
-          + "<script>\n"
-          + "\n"
-          + "var parent = document.currentScript.parentNode;\n"
-          + "\n"
-          + "var id = generateId();\n"
-          + "parent.id = id;\n"
-          + "\n"
-          + "`1`\n"
-          + "\n"
-          + "parent.update( id );\n"
-          + "\n"
-          + "</script>\n"
-          + "</div>\n"
-          + "\n"
-          + "</body>\n"
-          + "</html>";
+  public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildJSXGraph(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
 
-  protected static final String PLOTLY_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Plotly</title>\n"
-          + "\n"
-          + "   <script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>\n"
-          + "</head>\n"
-          + "<body>\n"
-          + "<div id='plotly' ></div>\n"
-          + "`1`\n"
-          + "</body>\n"
-          + "</html>";
+  public static String[] createPlotlyIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildPlotly(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript(
+        "<iframe srcdoc=\""
+            + html
+            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
+  }
+
 }

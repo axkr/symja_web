@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
@@ -27,11 +28,12 @@
 	</licenses>
 
 	<properties>
-		<appengine.maven.plugin.version>1.3.1</appengine.maven.plugin.version>
+		<appengine.maven.plugin.version>2.4.1</appengine.maven.plugin.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<java.version>11</java.version>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
 	</properties>
 
@@ -57,12 +59,23 @@
 			<groupId>org.matheclipse</groupId>
 			<artifactId>matheclipse-core</artifactId>
 			<version>2.0.0-SNAPSHOT</version>
-		</dependency> 
+		</dependency>
 		<dependency>
 			<groupId>org.matheclipse</groupId>
 			<artifactId>matheclipse-gpl</artifactId>
 			<version>2.0.0-SNAPSHOT</version>
-		</dependency> 
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.appengine</groupId>
+			<artifactId>appengine-api-1.0-sdk</artifactId>
+			<version>1.9.90</version>
+		</dependency>
+		<dependency>
+			<groupId>org.commonmark</groupId>
+			<artifactId>commonmark-ext-gfm-tables</artifactId>
+			<version>0.18.0</version>
+		</dependency>
 
 		<!-- Test Dependencies -->
 		<dependency>
@@ -71,12 +84,6 @@
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.appengine</groupId>
-			<artifactId>appengine-api-1.0-sdk</artifactId>
-			<version>1.9.58</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -97,11 +104,17 @@
 					</execution>
 				</executions>
 			</plugin>
-
+ 
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>appengine-maven-plugin</artifactId>
 				<version>${appengine.maven.plugin.version}</version>
+				<configuration>
+				<runtime>java11</runtime>
+					<projectId>symjaweb</projectId>
+					<version>694</version>
+					<gcloudMode>beta</gcloudMode>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -10,19 +10,18 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.logging.Logger;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.ExprEvaluator;
 // import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -34,6 +33,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.expression.data.GraphExpr;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.JSBuilder;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
@@ -43,7 +44,6 @@ import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
-
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -609,14 +609,18 @@ public class AJAXQueryServlet extends HttpServlet {
         // }
         // }
         // }
-        outExpr = MathEvaluator.eval(engine, outBuffer, inExpr);
+
+        //        outExpr = MathEvaluator.eval(engine, outBuffer, inExpr);
+        outExpr = evalTopLevel(engine, outBuffer, inExpr);
+        engine.addInOut(inExpr, outExpr);
+
         // if (USE_MEMCACHE) {
         // if (inExpr != outExpr && outExpr != null) { // compare
         // // pointers
         // putToMemcache(inExpr, outExpr);
         // }
         // }
-        engine.addInOut(inExpr, outExpr);
+
         if (outExpr != null) {
           if (outExpr.isAST(S.Graphics)) {
             outExpr = F.Show(outExpr);
@@ -675,8 +679,8 @@ public class AJAXQueryServlet extends HttpServlet {
             IAST jsFormData = (IAST) outExpr;
             if (jsFormData.arg2().toString().equals("mathcell")) {
               try {
-                return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.MATHCELL_IFRAME, jsFormData.arg1().toString());
+                return JSONBuilder.createMathcellIFrame(
+                    JSBuilder.MATHCELL_IFRAME_TEMPLATE, jsFormData.arg1().toString());
                 //                String manipulateStr = jsFormData.arg1().toString();
                 //                String html = MATHCELL_IFRAME;
                 //                html = StringUtils.replace(html, "`1`", manipulateStr);
@@ -693,8 +697,8 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
               try {
-                return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.JSXGRAPH_IFRAME, jsFormData.arg1().toString());
+                return JSONBuilder.createJSXGraphIFrame(
+                    JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
                 //                String manipulateStr = jsFormData.arg1().toString();
                 //                String html = JSXGRAPH_IFRAME;
                 //                html = StringUtils.replace(html, "`1`", manipulateStr);
@@ -711,8 +715,8 @@ public class AJAXQueryServlet extends HttpServlet {
               }
             } else if (jsFormData.arg2().toString().equals("plotly")) {
               try {
-                return JSONBuilder.createJSONIFrame(
-                    JSONBuilder.PLOTLY_IFRAME, jsFormData.arg1().toString());
+                return JSONBuilder.createPlotlyIFrame(
+                    JSBuilder.PLOTLY_IFRAME_TEMPLATE, jsFormData.arg1().toString());
                 //                String manipulateStr = jsFormData.arg1().toString();
                 //                String html = PLOTLY_IFRAME;
                 //                html = StringUtils.replace(html, "`1`", manipulateStr);
@@ -974,6 +978,17 @@ public class AJAXQueryServlet extends HttpServlet {
   //		// }
   //		return JSONValue.toJSONString(json);
   //	}
+  private static IExpr evalTopLevel(
+      EvalEngine engine, final StringWriter buf, final IExpr parsedExpression) {
+    IExpr result;
+    EvalEngine[] engineRef = new EvalEngine[] {engine};
+    result = ExprEvaluator.evalTopLevel(parsedExpression, engineRef);
+    engine = engineRef[0];
+    if ((result != null) && !result.equals(S.Null)) {
+      OutputFormFactory.get(engine.isRelaxedSyntax()).convert(buf, result);
+    }
+    return result;
+  }
 
   private static String[] listUserVariables(String userId) {
     StringBuilder bldr = new StringBuilder();
@@ -1183,7 +1198,7 @@ public class AJAXQueryServlet extends HttpServlet {
     Config.PRIME_FACTORS = new BigIntegerPrimality();
 
     EvalEngine.get().setPackageMode(true);
-    F.initSymbols(null, null, false);
+    F.initSymbols();
 
     F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
     F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
