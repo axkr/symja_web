@@ -65,6 +65,16 @@
 			<artifactId>matheclipse-gpl</artifactId>
 			<version>2.0.0-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.matheclipse</groupId>
+			<artifactId>matheclipse-logging</artifactId>
+			<version>2.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-logging-logback</artifactId>
+			<version>0.122.1-alpha</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.google.appengine</groupId>
@@ -104,39 +114,19 @@
 					</execution>
 				</executions>
 			</plugin>
- 
+
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>appengine-maven-plugin</artifactId>
 				<version>${appengine.maven.plugin.version}</version>
 				<configuration>
-				<runtime>java11</runtime>
+					<runtime>java11</runtime>
 					<projectId>symjaweb</projectId>
-					<version>694</version>
+					<version>697</version>
 					<gcloudMode>beta</gcloudMode>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
-	<repositories>
-		<repository>
-			<id>snapshots-repo</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>sonatype</id>
-			<url>https://oss.sonatype.org/content/groups/public/</url>
-		</repository>
-		<repository>
-			<id>orekit</id>
-			<url>https://packages.orekit.org/repository/maven-public/</url>
-		</repository>
-	</repositories>
 </project>

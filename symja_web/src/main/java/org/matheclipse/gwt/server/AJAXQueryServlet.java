@@ -17,9 +17,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.message.Message;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.builtin.GraphFunctions;
+import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 // import org.matheclipse.core.eval.LastCalculationsHistory;
@@ -41,6 +44,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.gpl.numbertheory.BigIntegerPrimality;
+import org.matheclipse.logging.ThreadLocalNotifyingAppender;
+import org.matheclipse.logging.ThreadLocalNotifyingAppender.ThreadLocalNotifierClosable;
 import org.matheclipse.parser.client.FEConfig;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -59,31 +64,6 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
 public class AJAXQueryServlet extends HttpServlet {
-
-  protected static final String GRAPHICS3D_IFRAME = //
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-          + "\n"
-          + "<!DOCTYPE html PUBLIC\n"
-          + "  \"-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN\"\n"
-          + "  \"http://www.w3.org/2002/04/xhtml-math-svg/xhtml-math-svg.dtd\">\n"
-          + "\n"
-          + "<html xmlns=\"http://www.w3.org/1999/xhtml\" style=\"width: 100%; height: 100%; margin: 0; padding: 0\">\n"
-          + "<head>\n"
-          + "<meta charset=\"utf-8\">\n"
-          + "<title>Graphics3D</title>\n"
-          + "<script src=https://cdnjs.cloudflare.com/ajax/libs/three.js/r116/three.min.js></script>\n"
-          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/Mathics/Detector.js></script>\n"
-          + "<script src=https://cdn.jsdelivr.net/gh/JerryI/Mathematica-ThreeJS-graphics-engine@latest/graphics3d.js></script>"
-          + "</head>\n"
-          + "\n"
-          + "<body>\n"
-          + "  <div id=\"graphics3d\"></div>\n"
-          + "</body>\n"
-          + "<script>\n"
-          + "var JSONThree = `1`;\n"
-          + "	interpretate(JSONThree);\n"
-          + "</script>"
-          + "</html>"; //
 
   protected static final String VISJS_IFRAME = //
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -571,7 +551,11 @@ public class AJAXQueryServlet extends HttpServlet {
       IExpr doc = Documentation.findDocumentation(input);
       return JSONBuilder.createJSONResult(engine, doc, outWriter, errorWriter);
     }
-    try {
+    WriterOutputStream wouts = new WriterOutputStream(outWriter);
+    WriterOutputStream werrors = new WriterOutputStream(errorWriter);
+    try (PrintStream outs = new PrintStream(wouts);
+        PrintStream errors = new PrintStream(werrors);
+        ThreadLocalNotifierClosable c = setLogEventNotifier(outs, errors); ) {
       ExprParser parser = new ExprParser(engine, SIMPLE_SYNTAX);
       // throws SyntaxError exception, if syntax isn't valid
       IExpr inExpr = parser.parse(input);
@@ -625,24 +609,37 @@ public class AJAXQueryServlet extends HttpServlet {
           if (outExpr.isAST(S.Graphics)) {
             outExpr = F.Show(outExpr);
           } else if (outExpr.isAST(S.Graphics3D)) {
-            IExpr expressionJSON =
-                engine.evaluate(F.ExportString(F.N(outExpr), F.stringx("ExpressionJSON")));
-            if (expressionJSON.isString()) {
-              String jsonStr = expressionJSON.toString();
+            StringBuilder buf = new StringBuilder();
+            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               try {
-                String html = GRAPHICS3D_IFRAME;
-                html = StringUtils.replace(html, "`1`", jsonStr);
-                html = StringEscapeUtils.escapeHtml4(html);
-                return JSONBuilder.createJSONJavaScript(
-                    "<iframe srcdoc=\""
-                        + html
-                        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+                return JSONBuilder.createGraphics3DIFrame(
+                    JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE, buf.toString());
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
                 }
               }
             }
+            //            IExpr expressionJSON =
+            //                engine.evaluate(F.ExportString(F.N(outExpr),
+            // F.stringx("ExpressionJSON")));
+            //            if (expressionJSON.isString()) {
+            //              String jsonStr = expressionJSON.toString();
+            //              try {
+            //                String html = GRAPHICS3D_IFRAME;
+            //                html = StringUtils.replace(html, "`1`", jsonStr);
+            //                html = StringEscapeUtils.escapeHtml4(html);
+            //                return JSONBuilder.createJSONJavaScript(
+            //                    "<iframe srcdoc=\""
+            //                        + html
+            //                        + "\" style=\"display: block; width: 100%; height: 100%;
+            // border: none;\" ></iframe>");
+            //              } catch (Exception ex) {
+            //                if (FEConfig.SHOW_STACKTRACE) {
+            //                  ex.printStackTrace();
+            //                }
+            //              }
+            //            }
           }
           if (outExpr.isASTSizeGE(F.Show, 2)) {
             IAST show = (IAST) outExpr;
@@ -664,32 +661,12 @@ public class AJAXQueryServlet extends HttpServlet {
                       + html
                       + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
             }
-            // } else if (outExpr instanceof ASTDataset) {
-            // String javaScriptStr = ASTDataset.datasetToJSForm((ASTDataset) outExpr);
-            // if (javaScriptStr != null) {
-            // String htmlSnippet = javaScriptStr.toString();
-            // String html = HTML_IFRAME;
-            // html = StringUtils.replace(html, "`1`", htmlSnippet);
-            // html = StringEscapeUtils.escapeHtml4(html);
-            // return createJSONJavaScript("<iframe srcdoc=\"" + html
-            // + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"
-            // ></iframe>");
-            // }
           } else if (outExpr.isAST(F.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;
             if (jsFormData.arg2().toString().equals("mathcell")) {
               try {
                 return JSONBuilder.createMathcellIFrame(
                     JSBuilder.MATHCELL_IFRAME_TEMPLATE, jsFormData.arg1().toString());
-                //                String manipulateStr = jsFormData.arg1().toString();
-                //                String html = MATHCELL_IFRAME;
-                //                html = StringUtils.replace(html, "`1`", manipulateStr);
-                //                html = StringEscapeUtils.escapeHtml4(html);
-                //                return JSONBuilder.createJSONJavaScript(
-                //                    "<iframe srcdoc=\""
-                //                        + html
-                //                        + "\" style=\"display: block; width: 100%; height: 100%;
-                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -699,15 +676,6 @@ public class AJAXQueryServlet extends HttpServlet {
               try {
                 return JSONBuilder.createJSXGraphIFrame(
                     JSBuilder.JSXGRAPH_IFRAME_TEMPLATE, jsFormData.arg1().toString());
-                //                String manipulateStr = jsFormData.arg1().toString();
-                //                String html = JSXGRAPH_IFRAME;
-                //                html = StringUtils.replace(html, "`1`", manipulateStr);
-                //                html = StringEscapeUtils.escapeHtml4(html);
-                //                return JSONBuilder.createJSONJavaScript(
-                //                    "<iframe srcdoc=\""
-                //                        + html
-                //                        + "\" style=\"display: block; width: 100%; height: 100%;
-                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -717,15 +685,6 @@ public class AJAXQueryServlet extends HttpServlet {
               try {
                 return JSONBuilder.createPlotlyIFrame(
                     JSBuilder.PLOTLY_IFRAME_TEMPLATE, jsFormData.arg1().toString());
-                //                String manipulateStr = jsFormData.arg1().toString();
-                //                String html = PLOTLY_IFRAME;
-                //                html = StringUtils.replace(html, "`1`", manipulateStr);
-                //                html = StringEscapeUtils.escapeHtml4(html);
-                //                return JSONBuilder.createJSONJavaScript(
-                //                    "<iframe srcdoc=\""
-                //                        + html
-                //                        + "\" style=\"display: block; width: 100%; height: 100%;
-                // border: none;\" ></iframe>");
               } catch (Exception ex) {
                 if (FEConfig.SHOW_STACKTRACE) {
                   ex.printStackTrace();
@@ -1205,5 +1164,25 @@ public class AJAXQueryServlet extends HttpServlet {
     // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     AJAXQueryServlet.log.info(servlet + "initialized");
+  }
+
+  static ThreadLocalNotifierClosable setLogEventNotifier(PrintStream outs, PrintStream errors) {
+
+    return ThreadLocalNotifyingAppender.addLogEventNotifier(
+        e -> {
+          if (e.getLevel().isMoreSpecificThan(Level.ERROR)) {
+            StringBuilder msg = new StringBuilder();
+            Message logMessage = e.getMessage();
+            if (logMessage != null) {
+              msg.append(logMessage.getFormattedMessage());
+            }
+            Throwable thrown = e.getThrown();
+            if (thrown != null) {
+              msg.append(": ").append(thrown.getMessage());
+            }
+            PrintStream stream = e.getLevel().isMoreSpecificThan(Level.ERROR) ? errors : outs;
+            stream.println(msg.toString());
+          }
+        });
   }
 }
