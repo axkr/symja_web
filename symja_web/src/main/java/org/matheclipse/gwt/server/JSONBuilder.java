@@ -3,11 +3,11 @@ package org.matheclipse.gwt.server;
 import java.io.StringWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.GraphicsFunctions;
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.S;
+import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.form.output.JSBuilder;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -120,10 +120,10 @@ public class JSONBuilder {
   public static String[] createJSONShow(EvalEngine engine, IAST show) {
     StringBuilder stw = new StringBuilder();
     stw.append("<math><mtable><mtr><mtd>");
-    if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
-      StringBuilder buf = new StringBuilder(2048);
-      GraphicsFunctions.graphicsToSVG((IAST) ((IAST) show).arg1(), stw);
-    }
+    // if (show.isAST() && show.size() > 1 && show.arg1().isAST(S.Graphics,2)) {
+    // StringBuilder buf = new StringBuilder(2048);
+    // GraphicsFunctions.graphicsToSVG((IAST) show.arg1(), stw);
+    // }
     stw.append("</mtd></mtr></mtable></math>");
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
@@ -140,13 +140,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONResult(
-      EvalEngine engine, IExpr outExpr, StringWriter outWriter, StringWriter errorWriter) {
+  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
+      StringWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
     StringWriter stw = new StringWriter();
-    if (!mathUtil.toMathML(outExpr, stw, true)) {
+    if (!outExpr.equals(S.Null) && !mathUtil.toMathML(outExpr, stw, true)) {
       return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
     }
 
@@ -157,23 +157,25 @@ public class JSONBuilder {
 
     String message = errorWriter.toString();
     if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
       ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
       messageJSON.put("prefix", "Error");
       messageJSON.put("message", Boolean.TRUE);
       messageJSON.put("tag", "evaluation");
       messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
       temp.add(messageJSON);
     }
 
     message = outWriter.toString();
     if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
       ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
       messageJSON.put("prefix", "Output");
       messageJSON.put("message", Boolean.TRUE);
       messageJSON.put("tag", "evaluation");
       messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
       temp.add(messageJSON);
     }
     resultsJSON.putPOJO("out", temp);
@@ -186,13 +188,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONHTML(
-      EvalEngine engine, String html, StringWriter outWriter, StringWriter errorWriter) {
+  public static String[] createJSONHTML(EvalEngine engine, String html, StringWriter outWriter,
+      StringWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
-    //    MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-    //	    StringWriter stw = new StringWriter();
-    //	    stw.append(html);
+    // MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
+    // StringWriter stw = new StringWriter();
+    // stw.append(html);
 
     ObjectNode resultsJSON = JSON_OBJECT_MAPPER.createObjectNode();
     resultsJSON.put("line", Integer.valueOf(21));
@@ -201,17 +203,19 @@ public class JSONBuilder {
 
     String message = errorWriter.toString();
     if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
       ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
       messageJSON.put("prefix", "Error");
       messageJSON.put("message", Boolean.TRUE);
       messageJSON.put("tag", "evaluation");
       messageJSON.put("symbol", "General");
-      messageJSON.put("text", "<math><mrow><mtext>" + message + "</mtext></mrow></math>");
+      messageJSON.put("text", "<math><mrow>" + message + "</mrow></math>");
       temp.add(messageJSON);
     }
 
     message = outWriter.toString();
     if (message.length() > 0) {
+      message = MathMLFormFactory.mathMLMtext(message);
       ObjectNode messageJSON = JSON_OBJECT_MAPPER.createObjectNode();
       messageJSON.put("prefix", "Output");
       messageJSON.put("message", Boolean.TRUE);
@@ -238,48 +242,45 @@ public class JSONBuilder {
    * @return
    */
   public static String[] createJSONIFrame(String html, String manipulateStr) {
-    html = IOFunctions.templateRender(html, new String[] {manipulateStr});
+    html = Errors.templateRender(html, new String[] {manipulateStr});
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" ></iframe>");
+  }
+
+  public static String[] createGraphics2DIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildGraphics2D(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createGraphics3DIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildGraphics3D(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createMathcellIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildMathcell(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createJSXGraphIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildJSXGraph(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
   }
 
   public static String[] createPlotlyIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildPlotly(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
-    return createJSONJavaScript(
-        "<iframe srcdoc=\""
-            + html
-            + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\" scrolling=\"no\"></iframe>");
   }
 
 }

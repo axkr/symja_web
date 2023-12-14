@@ -1,12 +1,10 @@
 package org.matheclipse;
 
 import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.matheclipse.gwt.server.AJAXQueryServlet;
+import jakarta.servlet.ServletException;
 
 public class AJAXQueryServletTest {
 

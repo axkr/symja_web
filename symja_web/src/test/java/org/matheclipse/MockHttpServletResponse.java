@@ -5,11 +5,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Locale;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * This mock class is created to enable basic unit testing of the
@@ -125,20 +124,20 @@ public class MockHttpServletResponse implements HttpServletResponse {
     return null;
   }
 
-  @Override
-  public String encodeRedirectUrl(String arg0) {
-    return null;
-  }
+  // @Override
+  // public String encodeRedirectUrl(String arg0) {
+  // return null;
+  // }
 
   @Override
   public String encodeURL(String arg0) {
     return null;
   }
 
-  @Override
-  public String encodeUrl(String arg0) {
-    return null;
-  }
+  // @Override
+  // public String encodeUrl(String arg0) {
+  // return null;
+  // }
 
   @Override
   public void sendError(int arg0) throws IOException {
@@ -168,27 +167,37 @@ public class MockHttpServletResponse implements HttpServletResponse {
   public void setStatus(int arg0) {
   }
 
-  @Override
-  public void setStatus(int arg0, String arg1) {
-  }
+  // @Override
+  // public void setStatus(int arg0, String arg1) {
+  // }
   
-  // Servlet API 3.0 and 3.1 methods
+  @Override
   public void setContentLengthLong(long length) {  
   }
 
+  @Override
   public int getStatus() {
     return 0;
   }
   
+  @Override
   public String getHeader(String name) {
     return null;
   }
 
+  @Override
   public Collection<String> getHeaders(String name) {
     return null;
   }
   
+  @Override
   public Collection<String> getHeaderNames() {
     return null;
+  }
+
+  @Override
+  public void sendRedirect(String location, int sc, boolean clearBuffer) throws IOException {
+    // TODO Auto-generated method stub
+
   }
 }

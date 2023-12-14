@@ -1,3 +1,7 @@
 /target/
 /Users/
-/.settings/
+
+# Eclipse configuration files
+.project
+.classpath
+.settings/

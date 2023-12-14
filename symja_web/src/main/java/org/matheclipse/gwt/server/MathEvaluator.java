@@ -2,17 +2,14 @@ package org.matheclipse.gwt.server;
 
 import java.io.IOException;
 import java.io.StringWriter;
-
-import org.matheclipse.core.builtin.IOFunctions;
+import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.S;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.INum;
 
 public class MathEvaluator {
 
@@ -25,7 +22,7 @@ public class MathEvaluator {
     } catch (final IterationLimitExceeded e) {
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int iterationLimit = engine.getIterationLimit();
-      IOFunctions.printMessage(
+      Errors.printMessage(
           S.$IterationLimit,
           "itlim",
           F.List(iterationLimit < 0 ? F.CInfinity : F.ZZ(iterationLimit), parsedExpression),
@@ -34,7 +31,7 @@ public class MathEvaluator {
     } catch (final RecursionLimitExceeded e) {
       // Recursion depth of `1` exceeded during evaluation of `2`.
       int recursionLimit = engine.getRecursionLimit();
-      IOFunctions.printMessage(
+      Errors.printMessage(
           S.$RecursionLimit,
           "reclim2",
           F.List(recursionLimit < 0 ? F.CInfinity : F.ZZ(recursionLimit), parsedExpression),
