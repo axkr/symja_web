@@ -13,9 +13,8 @@ This [WAR file](https://en.wikipedia.org/wiki/WAR_(file_format)) can then be [de
 
 Related links:
  
-* [Quickstart for Java 8 for App Engine Standard Environment](https://cloud.google.com/appengine/docs/standard/java/quickstart-java8)
+* [Quickstart for Java for App Engine Standard Environment](https://cloud.google.com/appengine/docs/standard/java/quickstart-java8)
 * [Using Apache Maven and the App Engine Plugin (App Engine SDK-based)](https://cloud.google.com/appengine/docs/standard/java/tools/maven)
-* [Deploy App Engine Standard Application with Eclipse](https://cloud.google.com/eclipse/docs/deploying)
 * [Symja Project](https://github.com/axkr/symja_android_library) 
 
 ### Quick start 
