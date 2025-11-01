@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,6 +25,7 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.Level;
@@ -32,10 +34,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.Message;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
-import org.matheclipse.core.builtin.GraphicsFunctions;
 import org.matheclipse.core.eval.Errors;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.GraphicsUtil;
 // import org.matheclipse.core.eval.LastCalculationsHistory;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.eval.TeXUtilities;
@@ -73,6 +75,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.util.concurrent.MoreExecutors;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -114,7 +117,7 @@ public class AJAXQueryServlet extends HttpServlet {
 
   public static final String EVAL_ENGINE = EvalEngine.class.getName();
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(AJAXQueryServlet.class);
 
   public static volatile boolean INITIALIZED = false;
 
@@ -175,8 +178,8 @@ public class AJAXQueryServlet extends HttpServlet {
   }
 
   private String[] calculateString(EvalEngine engine, final String inputString,
-      final String numericMode, final String function, StringWriter outWriter,
-      StringWriter errorWriter) {
+      final String numericMode, final String function, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     String[] result = null;
     try {
       ExecutorService executors = Executors.newSingleThreadExecutor();
@@ -196,12 +199,17 @@ public class AJAXQueryServlet extends HttpServlet {
       } catch (InterruptedException e) {
         result = JSONBuilder.createJSONError("Timeout exceeded. Calculation interrupted!");
       } catch (ExecutionException | TimeoutException e) {
-        engine.setStopRequested(true);
+        // engine.setStopRequested(true);
         result = JSONBuilder.createJSONError("Timeout exceeded. Calculation aborted!");
+      } finally {
+        if (!task.isDone() && !task.cancel(true)) {
+          LOGGER.warn("task.cancel() failed!");
+        }
+        MoreExecutors.shutdownAndAwaitTermination(executors, 1, TimeUnit.SECONDS);
       }
       return result;
     } finally {
-        sendMail();
+      sendMail();
     }
 
   }
@@ -226,10 +234,10 @@ public class AJAXQueryServlet extends HttpServlet {
     HttpSession session = request.getSession();
     try {
       if (userService.isUserLoggedIn()) {
-        final StringWriter outWriter = new StringWriter();
+        final StringBuilderWriter outWriter = new StringBuilderWriter();
         WriterOutputStream wouts = new WriterOutputStream(outWriter);
         outs = new PrintStream(wouts);
-        final StringWriter errorWriter = new StringWriter();
+        final StringBuilderWriter errorWriter = new StringBuilderWriter();
         WriterOutputStream werrors = new WriterOutputStream(errorWriter);
         errors = new PrintStream(werrors);
         User user = userService.getCurrentUser();
@@ -249,10 +257,10 @@ public class AJAXQueryServlet extends HttpServlet {
         // return result[1].toString();
         // }
         LOGGER.warn("(" + session.getId() + ") In::" + expression);
-        final StringWriter outWriter = new StringWriter();
+        final StringBuilderWriter outWriter = new StringBuilderWriter();
         WriterOutputStream wouts = new WriterOutputStream(outWriter);
         outs = new PrintStream(wouts);
-        final StringWriter errorWriter = new StringWriter();
+        final StringBuilderWriter errorWriter = new StringBuilderWriter();
         WriterOutputStream werrors = new WriterOutputStream(errorWriter);
         errors = new PrintStream(werrors);
         engine = new EvalEngine(session.getId(), 256, 256, outs, errors, true);
@@ -515,8 +523,8 @@ public class AJAXQueryServlet extends HttpServlet {
   // }
 
   public String[] evaluateString(EvalEngine engine, final String inputString,
-      final String numericMode, final String function, StringWriter outWriter,
-      StringWriter errorWriter) {
+      final String numericMode, final String function, StringBuilderWriter outWriter,
+      StringBuilderWriter errorWriter) {
     boolean SIMPLE_SYNTAX = true;
     String input = inputString.trim();
     WriterOutputStream wouts = new WriterOutputStream(outWriter);
@@ -550,7 +558,7 @@ public class AJAXQueryServlet extends HttpServlet {
         }
         // inExpr contains the user input from the web interface in
         // internal format now
-        StringWriter outBuffer = new StringWriter();
+        StringBuilderWriter outBuffer = new StringBuilderWriter();
         IExpr outExpr;
         // if (USE_MEMCACHE) {
         // outExpr = getFromMemcache(inExpr);
@@ -577,7 +585,7 @@ public class AJAXQueryServlet extends HttpServlet {
           if (outExpr.isAST(S.Graphics)) {
             // outExpr = F.Show(outExpr);
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics2D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsUtil.renderGraphics2D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics2DIFrame(JSBuilder.GRAPHICS2D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -587,7 +595,7 @@ public class AJAXQueryServlet extends HttpServlet {
             }
           } else if (outExpr.isAST(S.Graphics3D)) {
             StringBuilder buf = new StringBuilder();
-            if (GraphicsFunctions.renderGraphics3D(buf, (IAST) outExpr, engine)) {
+            if (GraphicsUtil.renderGraphics3D(buf, (IAST) outExpr, engine)) {
               try {
                 return JSONBuilder.createGraphics3DIFrame(JSBuilder.GRAPHICS3D_IFRAME_TEMPLATE,
                     buf.toString());
@@ -646,28 +654,35 @@ public class AJAXQueryServlet extends HttpServlet {
             }
           } else if (outExpr.isAST(F.JSFormData, 3)) {
             IAST jsFormData = (IAST) outExpr;
-            if (jsFormData.arg2().toString().equals("mathcell")) {
+            if (jsFormData.arg2().toString().equals(JSBuilder.MATHCELL_STR)) {
               try {
                 return JSONBuilder.createMathcellIFrame(JSBuilder.MATHCELL_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("jsxgraph")) {
+            } else if (jsFormData.arg2().toString().equals(JSBuilder.ECHARTS_STR)) {
+              try {
+                return JSONBuilder.createEChartsIFrame(JSBuilder.ECHARTS_IFRAME_TEMPLATE,
+                    jsFormData.arg1().toString());
+              } catch (Exception ex) {
+                LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
+              }
+            } else if (jsFormData.arg2().toString().equals(JSBuilder.JSXGRAPH_STR)) {
               try {
                 return JSONBuilder.createJSXGraphIFrame(JSBuilder.JSXGRAPH_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("plotly")) {
+            } else if (jsFormData.arg2().toString().equals(JSBuilder.PLOTLY_STR)) {
               try {
                 return JSONBuilder.createPlotlyIFrame(JSBuilder.PLOTLY_IFRAME_TEMPLATE,
                     jsFormData.arg1().toString());
               } catch (Exception ex) {
                 LOGGER.debug("{}.evaluateString() failed", getClass().getSimpleName(), ex);
               }
-            } else if (jsFormData.arg2().toString().equals("treeform")) {
+            } else if (jsFormData.arg2().toString().equals(JSBuilder.TREEFORM_STR)) {
               try {
                 String manipulateStr = jsFormData.arg1().toString();
                 String html = JSBuilder.VISJS_IFRAME;
@@ -891,7 +906,7 @@ public class AJAXQueryServlet extends HttpServlet {
   // // }
   // return JSONValue.toJSONString(json);
   // }
-  private static IExpr evalTopLevel(EvalEngine engine, final StringWriter buf,
+  private static IExpr evalTopLevel(EvalEngine engine, final StringBuilderWriter buf,
       final IExpr parsedExpression) {
     IExpr result;
     EvalEngine[] engineRef = new EvalEngine[] {engine};
@@ -920,7 +935,7 @@ public class AJAXQueryServlet extends HttpServlet {
     return new String[] {"expr", bldr.toString()};
   }
 
-  private static String[] createOutput(StringWriter buffer, IExpr rhsExpr, EvalEngine engine,
+  private static String[] createOutput(StringBuilderWriter buffer, IExpr rhsExpr, EvalEngine engine,
       String function) throws IOException {
 
     boolean textEval = true;
@@ -947,7 +962,7 @@ public class AJAXQueryServlet extends HttpServlet {
       if (function.length() > 0 && function.equals("$mathml")) {
         MathMLUtilities mathUtil = new MathMLUtilities(engine, false, true);
         StringWriter stw = new StringWriter();
-        if (!mathUtil.toMathML(res, stw)) {
+        if (!mathUtil.toMathML(res, stw, true)) {
           return new String[] {"error", "Max. output size exceeded " + Config.MAX_OUTPUT_SIZE};
         }
         return new String[] {"mathml", stw.toString()};
@@ -1099,9 +1114,14 @@ public class AJAXQueryServlet extends HttpServlet {
     ToggleFeature.COMPILE_PRINT = true;
     Config.UNPROTECT_ALLOWED = false;
     Config.USE_MANIPULATE_JS = true;
+    // ToggleFeature.JS_ECHARTS = true;
     // disable threads for JAS on appengine
     Config.JAS_NO_THREADS = true;
-    Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+    try {
+      Config.THREAD_FACTORY = com.google.appengine.api.ThreadManager.currentRequestThreadFactory();
+    } catch (NullPointerException npe) {
+      LOGGER.warn("NullPointerException intializing Config.THREAD_FACTORY");
+    }
     Config.MATHML_TRIG_LOWERCASE = false;
     Config.MAX_AST_SIZE = (Short.MAX_VALUE) * 8;
     Config.MAX_OUTPUT_SIZE = Short.MAX_VALUE;
@@ -1109,15 +1129,18 @@ public class AJAXQueryServlet extends HttpServlet {
     Config.MAX_INPUT_LEAVES = 1000L;
     Config.MAX_MATRIX_DIMENSION_SIZE = 100;
     Config.MAX_POLYNOMIAL_DEGREE = 100;
-    Config.PRIME_FACTORS = new BigIntegerPrimality();
     Config.SERVER_REQUEST_TIMEOUT_SECONDS = 30;
 
-    EvalEngine.get().setPackageMode(true);
-    F.initSymbols();
+    CompletableFuture<Void> symbolsInitialized = CompletableFuture.runAsync(() -> {
+      EvalEngine.get().setPackageMode(true);
+      F.initSymbols();
+      
+      Config.PRIME_FACTORS = new BigIntegerPrimality();
+      F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
+      F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
+      // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
+    }, Executors.newVirtualThreadPerTaskExecutor());
 
-    F.Plot.setEvaluator(org.matheclipse.core.reflection.system.Plot.CONST);
-    F.Plot3D.setEvaluator(org.matheclipse.core.reflection.system.Plot3D.CONST);
-    // F.Show.setEvaluator(org.matheclipse.core.builtin.graphics.Show.CONST);
     // Config.JAS_NO_THREADS = true;
     LOGGER.info(servlet + "initialized");
   }

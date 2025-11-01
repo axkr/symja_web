@@ -1,6 +1,7 @@
 package org.matheclipse.gwt.server;
 
 import java.io.StringWriter;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.text.StringEscapeUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.Errors;
@@ -140,13 +141,13 @@ public class JSONBuilder {
     return new String[] {"mathml", json.toString()};
   }
 
-  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr, StringWriter outWriter,
-      StringWriter errorWriter) {
+  public static String[] createJSONResult(EvalEngine engine, IExpr outExpr,
+      StringBuilderWriter outWriter, StringBuilderWriter errorWriter) {
     // DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
     // DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
     MathMLUtilities mathUtil = new MathMLUtilities(engine, false, false);
-    StringWriter stw = new StringWriter();
-    if (!outExpr.equals(S.Null) && !mathUtil.toMathML(outExpr, stw, true)) {
+    StringBuilderWriter stw = new StringBuilderWriter();
+    if (!outExpr.equals(S.Null) && !mathUtil.toMathML(outExpr, stw, true, true)) {
       return createJSONError("Max. output size exceeded " + Config.MAX_OUTPUT_SIZE);
     }
 
@@ -264,6 +265,13 @@ public class JSONBuilder {
 
   public static String[] createMathcellIFrame(String html, String manipulateStr) {
     html = JSBuilder.buildMathcell(html, manipulateStr);
+    html = StringEscapeUtils.escapeHtml4(html);
+    return createJSONJavaScript("<iframe srcdoc=\"" + html
+        + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");
+  }
+
+  public static String[] createEChartsIFrame(String html, String manipulateStr) {
+    html = JSBuilder.buildECharts(html, manipulateStr);
     html = StringEscapeUtils.escapeHtml4(html);
     return createJSONJavaScript("<iframe srcdoc=\"" + html
         + "\" style=\"display: block; width: 100%; height: 100%; border: none;\"></iframe>");

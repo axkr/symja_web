@@ -200,4 +200,10 @@ public class MockHttpServletResponse implements HttpServletResponse {
     // TODO Auto-generated method stub
 
   }
+
+  @Override
+  public void sendEarlyHints() {
+    // TODO Auto-generated method stub
+
+  }
 }

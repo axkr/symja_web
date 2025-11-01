@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import org.matheclipse.core.builtin.IOFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.interfaces.IAST;
@@ -16,6 +15,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * This servlet is used to search for a function name and return the documentation in HTML format.
+ * 
+ */
 public class AJAXSearchServlet extends HttpServlet {
   public static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -63,7 +66,7 @@ public class AJAXSearchServlet extends HttpServlet {
       } else {
         out.println(
             createJSONDocString(
-                "<p>Insert a keyword and append a '*' to search for keywords. Example: <b>Int*</b>.</p>"));
+                "<p>Insert the start of a keyword to search for keywords. Example: <b>Int</b>.</p>"));
       }
       return;
     } catch (Exception e) {
@@ -72,8 +75,8 @@ public class AJAXSearchServlet extends HttpServlet {
   }
 
   private static void findDocumentation(Appendable out, String trimmedInput) {
-    String name = trimmedInput; // .substring(1);
-    IAST list = IOFunctions.getNamesByPrefix(name);
+    String name = trimmedInput;
+    IAST list = Documentation.getDocumentationByPrefix(name, false);
     try {
       if (list.size() != 2) {
         for (int i = 1; i < list.size(); i++) {

@@ -34,7 +34,7 @@ public class EvaluateServlet extends HttpServlet {
   private static final long serialVersionUID = 6265703737413093134L;
 
 
-  private static final Logger LOGGER = LogManager.getLogger();
+  private static final Logger LOGGER = LogManager.getLogger(EvaluateServlet.class);
 
   private static final boolean DEBUG = true;
 
@@ -312,7 +312,7 @@ public class EvaluateServlet extends HttpServlet {
       if (function.length() > 0 && function.equals("$mathml")) {
         MathMLUtilities mathUtil = new MathMLUtilities(engine, false, true);
         StringWriter stw = new StringWriter();
-        mathUtil.toMathML(res, stw);
+        mathUtil.toMathML(res, stw, true);
         return new String[] {"mathml", stw.toString()};
       } else if (function.length() > 0 && function.equals("$tex")) {
         TeXUtilities texUtil = new TeXUtilities(engine, true);
