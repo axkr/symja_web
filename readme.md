@@ -1,6 +1,8 @@
 ## Symja web interface running on Google Appengine 
 
-**Note**: this repository requires **Java 8**. 
+[![Join our Discord](https://img.shields.io/discord/869895703718166529?color=7289da&label=Join%20our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/tYknzr2qam)
+
+**Note**: this repository requires **Java 25**. 
 
 This repository contains the sources for the [Symja Google Appengine web interface](http://matheclipse.org/). 
 
@@ -19,8 +21,6 @@ Related links:
 ### Quick start 
 
 Read the [Symja Manual](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/index.md) for the description of the Symja language. We encourage everyone to participate in our [Wiki](https://github.com/axkr/symja_android_library/wiki).
-
-[![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ### Contact
 
